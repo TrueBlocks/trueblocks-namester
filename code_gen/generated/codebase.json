@@ -1,0 +1,370 @@
+{
+    "commands": [
+        {
+            "num": 6000,
+            "group": "Types",
+            "description": "TrueBlocks Types",
+            "summary": "TrueBlocks Types"
+        },
+        {
+            "num": 6100,
+            "folder": "pkg",
+            "route": "abis",
+            "group": "Types",
+            "description": "The route for the abis folder",
+            "return_type": "string",
+            "attributes": "visible|docs",
+            "capabilities": "code",
+            "summary": "Abis route"
+        },
+        {
+            "num": 6200,
+            "folder": "pkg",
+            "route": "chunks",
+            "group": "Types",
+            "description": "The route for the chunks folder",
+            "return_type": "string",
+            "attributes": "visible|docs",
+            "capabilities": "code",
+            "summary": "Chunks route"
+        },
+        {
+            "num": 6300,
+            "folder": "pkg",
+            "route": "exports",
+            "group": "Types",
+            "description": "The route for the exports folder",
+            "return_type": "string",
+            "attributes": "visible|docs",
+            "capabilities": "code",
+            "summary": "Exports route"
+        },
+        {
+            "num": 6400,
+            "folder": "pkg",
+            "route": "monitors",
+            "group": "Types",
+            "description": "The route for the monitors folder",
+            "return_type": "string",
+            "attributes": "visible|docs",
+            "capabilities": "code",
+            "summary": "Monitors route"
+        },
+        {
+            "num": 6500,
+            "folder": "pkg",
+            "route": "names",
+            "group": "Types",
+            "description": "The route for the names folder",
+            "return_type": "string",
+            "attributes": "visible|docs",
+            "capabilities": "code",
+            "summary": "Names route",
+            "productions": [
+                {
+                    "class": "Names",
+                    "doc_group": "001-Route",
+                    "doc_route": "400-names",
+                    "doc_descr": "an association between a human-readable name and an address used throughout TrueBlocks",
+                    "produced_by": "names",
+                    "members": [
+                        {
+                            "name": "address",
+                            "type": "address",
+                            "attributes": "width=340|readOnly",
+                            "docOrder": 1,
+                            "description": "the address associated with this name",
+                            "num": 1
+                        },
+                        {
+                            "name": "name",
+                            "type": "string",
+                            "attributes": "required",
+                            "docOrder": 2,
+                            "description": "the name associated with this address",
+                            "num": 2
+                        },
+                        {
+                            "name": "tags",
+                            "type": "string",
+                            "attributes": "width=150",
+                            "docOrder": 3,
+                            "description": "colon separated list of tags",
+                            "num": 3
+                        },
+                        {
+                            "name": "source",
+                            "type": "string",
+                            "attributes": "width=120",
+                            "docOrder": 4,
+                            "description": "user supplied source of where this name was found",
+                            "num": 4
+                        },
+                        {
+                            "name": "symbol",
+                            "type": "string",
+                            "attributes": "width=100",
+                            "docOrder": 5,
+                            "description": "the symbol for this address",
+                            "num": 5
+                        },
+                        {
+                            "name": "decimals",
+                            "type": "uint64",
+                            "attributes": "width=100",
+                            "docOrder": 6,
+                            "description": "number of decimals retrieved from an ERC20 smart contract",
+                            "num": 6
+                        },
+                        {
+                            "name": "deleted",
+                            "type": "bool",
+                            "attributes": "noui",
+                            "docOrder": 7,
+                            "description": "if deleted",
+                            "num": 7
+                        },
+                        {
+                            "name": "isCustom",
+                            "type": "bool",
+                            "attributes": "noui",
+                            "docOrder": 8,
+                            "description": "if the address is a custom address",
+                            "num": 8
+                        },
+                        {
+                            "name": "isPrefund",
+                            "type": "bool",
+                            "attributes": "noui",
+                            "docOrder": 9,
+                            "description": "if the address was one of the prefund addresses, `false` otherwise",
+                            "num": 9
+                        },
+                        {
+                            "name": "isContract",
+                            "type": "bool",
+                            "attributes": "noui",
+                            "docOrder": 10,
+                            "description": "if the address is a smart contract",
+                            "num": 10
+                        },
+                        {
+                            "name": "isErc20",
+                            "type": "bool",
+                            "attributes": "noui",
+                            "docOrder": 11,
+                            "description": "if the address is an ERC20",
+                            "num": 11
+                        },
+                        {
+                            "name": "isErc721",
+                            "type": "bool",
+                            "attributes": "noui",
+                            "docOrder": 12,
+                            "description": "if the address is an ERC720",
+                            "num": 12
+                        }
+                    ],
+                    "facets": [
+                        {
+                            "name": "All",
+                            "store": "Names",
+                            "cruds": null,
+                            "viewType": "",
+                            "attributes": ""
+                        },
+                        {
+                            "name": "Custom",
+                            "store": "Names",
+                            "cruds": [
+                                "delete",
+                                "undelete",
+                                "remove",
+                                "update",
+                                "autoname"
+                            ],
+                            "viewType": "",
+                            "attributes": ""
+                        },
+                        {
+                            "name": "Prefund",
+                            "store": "Names",
+                            "cruds": null,
+                            "viewType": "",
+                            "attributes": "dividerBefore"
+                        },
+                        {
+                            "name": "Regular",
+                            "store": "Names",
+                            "cruds": null,
+                            "viewType": "",
+                            "attributes": ""
+                        },
+                        {
+                            "name": "Baddress",
+                            "store": "Names",
+                            "cruds": null,
+                            "viewType": "",
+                            "attributes": ""
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "structures": [
+        {
+            "class": "Names",
+            "doc_group": "001-Route",
+            "doc_route": "400-names",
+            "doc_descr": "an association between a human-readable name and an address used throughout TrueBlocks",
+            "produced_by": "names",
+            "members": [
+                {
+                    "name": "address",
+                    "type": "address",
+                    "attributes": "width=340|readOnly",
+                    "docOrder": 1,
+                    "description": "the address associated with this name",
+                    "num": 1
+                },
+                {
+                    "name": "name",
+                    "type": "string",
+                    "attributes": "required",
+                    "docOrder": 2,
+                    "description": "the name associated with this address",
+                    "num": 2
+                },
+                {
+                    "name": "tags",
+                    "type": "string",
+                    "attributes": "width=150",
+                    "docOrder": 3,
+                    "description": "colon separated list of tags",
+                    "num": 3
+                },
+                {
+                    "name": "source",
+                    "type": "string",
+                    "attributes": "width=120",
+                    "docOrder": 4,
+                    "description": "user supplied source of where this name was found",
+                    "num": 4
+                },
+                {
+                    "name": "symbol",
+                    "type": "string",
+                    "attributes": "width=100",
+                    "docOrder": 5,
+                    "description": "the symbol for this address",
+                    "num": 5
+                },
+                {
+                    "name": "decimals",
+                    "type": "uint64",
+                    "attributes": "width=100",
+                    "docOrder": 6,
+                    "description": "number of decimals retrieved from an ERC20 smart contract",
+                    "num": 6
+                },
+                {
+                    "name": "deleted",
+                    "type": "bool",
+                    "attributes": "noui",
+                    "docOrder": 7,
+                    "description": "if deleted",
+                    "num": 7
+                },
+                {
+                    "name": "isCustom",
+                    "type": "bool",
+                    "attributes": "noui",
+                    "docOrder": 8,
+                    "description": "if the address is a custom address",
+                    "num": 8
+                },
+                {
+                    "name": "isPrefund",
+                    "type": "bool",
+                    "attributes": "noui",
+                    "docOrder": 9,
+                    "description": "if the address was one of the prefund addresses, `false` otherwise",
+                    "num": 9
+                },
+                {
+                    "name": "isContract",
+                    "type": "bool",
+                    "attributes": "noui",
+                    "docOrder": 10,
+                    "description": "if the address is a smart contract",
+                    "num": 10
+                },
+                {
+                    "name": "isErc20",
+                    "type": "bool",
+                    "attributes": "noui",
+                    "docOrder": 11,
+                    "description": "if the address is an ERC20",
+                    "num": 11
+                },
+                {
+                    "name": "isErc721",
+                    "type": "bool",
+                    "attributes": "noui",
+                    "docOrder": 12,
+                    "description": "if the address is an ERC720",
+                    "num": 12
+                }
+            ],
+            "facets": [
+                {
+                    "name": "All",
+                    "store": "Names",
+                    "cruds": null,
+                    "viewType": "",
+                    "attributes": ""
+                },
+                {
+                    "name": "Custom",
+                    "store": "Names",
+                    "cruds": [
+                        "delete",
+                        "undelete",
+                        "remove",
+                        "update",
+                        "autoname"
+                    ],
+                    "viewType": "",
+                    "attributes": ""
+                },
+                {
+                    "name": "Prefund",
+                    "store": "Names",
+                    "cruds": null,
+                    "viewType": "",
+                    "attributes": "dividerBefore"
+                },
+                {
+                    "name": "Regular",
+                    "store": "Names",
+                    "cruds": null,
+                    "viewType": "",
+                    "attributes": ""
+                },
+                {
+                    "name": "Baddress",
+                    "store": "Names",
+                    "cruds": null,
+                    "viewType": "",
+                    "attributes": ""
+                }
+            ]
+        }
+    ],
+    "baseTypes": [
+        {},
+        {},
+        {}
+    ]
+}
