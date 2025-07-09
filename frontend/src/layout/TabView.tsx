@@ -34,6 +34,13 @@ export const TabView = ({ tabs, route, onTabChange }: TabViewProps) => {
   const [activeTab, setActiveTab] = useState<string>(getInitialTab());
 
   useEffect(() => {
+    const savedTab = lastTab[route];
+    if (savedTab && savedTab !== activeTab) {
+      setActiveTab(savedTab);
+    }
+  }, [lastTab, route, activeTab]);
+
+  useEffect(() => {
     if (activeTab && !lastTab[route]) {
       setLastTab(route, activeTab as types.DataFacet);
       if (onTabChange) {

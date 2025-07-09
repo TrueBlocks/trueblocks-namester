@@ -1,8 +1,13 @@
 import { useCallback, useMemo } from 'react';
 
 import { ViewStateKey } from '@contexts';
+import { useWalletGatedAction } from '@hooks';
 import { crud, sdk, types } from '@models';
-import { Log, useErrorHandler } from '@utils';
+import { Log, isDebugMode, useErrorHandler } from '@utils';
+
+import { useActionMsgs } from './useActionMsgs';
+
+const debug = isDebugMode();
 
 // Helper function for getting address string - moved outside component for stability
 const getAddressString = (address: unknown): string => {
@@ -13,12 +18,21 @@ const getAddressString = (address: unknown): string => {
   return String(address || '');
 };
 
-// Action definition with level, wallet requirements, and facet restrictions
+export type ActionType =
+  | 'publish'
+  | 'pin'
+  | 'add'
+  | 'delete'
+  | 'remove'
+  | 'autoname'
+  | 'clean'
+  | 'update';
+
+// Action definition with level, wallet requirements
 export interface ActionDefinition {
-  type: 'add' | 'publish' | 'pin' | 'delete' | 'remove' | 'autoname' | 'clean';
+  type: ActionType;
   level: 'row' | 'header' | 'both';
   requiresWallet: boolean;
-  facetRestriction?: types.DataFacet[];
   title: string;
   icon: string;
 }
@@ -75,28 +89,26 @@ export interface CollectionActionsConfig<TPageData, TItem> {
 
 // Predefined action definitions
 const ACTION_DEFINITIONS: Record<string, ActionDefinition> = {
-  add: {
-    type: 'add',
-    level: 'header',
-    requiresWallet: false,
-    title: 'Add',
-    icon: 'Add',
-  },
   publish: {
     type: 'publish',
     level: 'header',
     requiresWallet: true,
-    facetRestriction: [types.DataFacet.CUSTOM],
     title: 'Publish',
     icon: 'Publish',
   },
   pin: {
     type: 'pin',
     level: 'header',
-    requiresWallet: true,
-    facetRestriction: [types.DataFacet.CUSTOM],
+    requiresWallet: false,
     title: 'Pin',
     icon: 'Pin',
+  },
+  add: {
+    type: 'add',
+    level: 'header',
+    requiresWallet: false,
+    title: 'Add',
+    icon: 'Add',
   },
   delete: {
     type: 'delete',
@@ -126,6 +138,13 @@ const ACTION_DEFINITIONS: Record<string, ActionDefinition> = {
     title: 'Clean',
     icon: 'Clean',
   },
+  update: {
+    type: 'update',
+    level: 'row',
+    requiresWallet: false,
+    title: 'Update',
+    icon: 'Edit',
+  },
 };
 
 export const useActions = <TPageData extends { totalItems: number }, TItem>(
@@ -151,6 +170,11 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
     cleanFunc,
   } = config;
 
+  const { isWalletConnected, createWalletGatedAction } = useWalletGatedAction();
+  const { emitSuccess } = useActionMsgs(
+    collection as 'names' | 'monitors' | 'abis',
+  );
+
   const currentDataFacet = useMemo(
     () => getCurrentDataFacet(),
     [getCurrentDataFacet],
@@ -159,21 +183,18 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
   // Items property name (derived from collection name)
   const itemsProperty = collection;
 
-  // Filter actions based on current facet and enabled actions
+  // Filter actions based on enabled actions
   const availableActions = useMemo(() => {
     return enabledActions
-      .map((actionType) => ACTION_DEFINITIONS[actionType])
+      .map((actionType) => {
+        const baseAction = ACTION_DEFINITIONS[actionType];
+        if (!baseAction) return null;
+        return baseAction;
+      })
       .filter((action): action is ActionDefinition => {
-        if (!action) return false;
-        if (
-          action.facetRestriction &&
-          !action.facetRestriction.includes(currentDataFacet)
-        ) {
-          return false;
-        }
-        return true;
+        return !!action;
       });
-  }, [enabledActions, currentDataFacet]);
+  }, [enabledActions]);
 
   // Separate actions by level
   const headerActions = useMemo(
@@ -200,14 +221,14 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
     // TODO: Implement add functionality
   }, [collection]);
 
-  const handlePublish = useCallback(() => {
-    Log(`Publishing ${collection} with wallet:`); // , walletAddress);
+  const handlePublish = createWalletGatedAction((walletAddress: string) => {
+    Log(`Publishing ${collection} with wallet:`, walletAddress);
     // TODO: Implement publish functionality with connected wallet
-  }, [collection]);
+  }, collection);
 
   const handlePin = useCallback(() => {
-    Log(`Pinning ${collection} with wallet:`); // , walletAddress);
-    // TODO: Implement pin functionality with connected wallet
+    Log(`Pinning ${collection}`);
+    // TODO: Implement pin functionality
   }, [collection]);
 
   const handleToggle = useCallback(
@@ -277,6 +298,10 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
         } as TItem)
           .then(() => {
             // Success handled by visual state change
+            if (debug) {
+              const action = newDeletedState ? 'delete' : 'undelete';
+              emitSuccess(action as 'delete' | 'undelete', address);
+            }
           })
           .catch((err: unknown) => {
             handleError(err, `Failed to toggle delete for ${address}`);
@@ -304,6 +329,7 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
       currentDataFacet,
       clearError,
       handleError,
+      emitSuccess,
     ],
   );
 
@@ -366,6 +392,9 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
 
             setPageData(result);
             setTotalItems(result.totalItems || 0);
+            if (debug) {
+              emitSuccess('remove', address);
+            }
           })
           .catch((err: unknown) => {
             handleError(err, `Failed to remove ${address}`);
@@ -399,6 +428,7 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
       currentDataFacet,
       clearError,
       handleError,
+      emitSuccess,
     ],
   );
 
@@ -456,6 +486,9 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
             );
             setPageData(result);
             setTotalItems(result.totalItems || 0);
+            if (debug) {
+              emitSuccess('autoname', address);
+            }
           })
           .catch((err: unknown) => {
             handleError(err, `Failed to auto-name ${address}`);
@@ -488,6 +521,7 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
       currentDataFacet,
       clearError,
       handleError,
+      emitSuccess,
     ],
   );
 
@@ -546,6 +580,9 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
         )
           .then(() => {
             // Success handled by visual state change
+            if (debug) {
+              emitSuccess('update', addressStr);
+            }
           })
           .catch((err: unknown) => {
             setPageData((prev) => {
@@ -573,6 +610,7 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
       currentDataFacet,
       clearError,
       handleError,
+      emitSuccess,
     ],
   );
 
@@ -592,6 +630,9 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
       );
       setPageData(result);
       setTotalItems(result.totalItems || 0);
+      if (debug) {
+        emitSuccess('clean');
+      }
     } catch (err: unknown) {
       handleError(err, `Failed to clean ${collection}`);
     }
@@ -609,6 +650,7 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
     setTotalItems,
     handleError,
     collection,
+    emitSuccess,
   ]);
 
   // TODO: Implement handleCleanOne if needed for cleaning specific addresses
@@ -700,7 +742,7 @@ export const useActions = <TPageData extends { totalItems: number }, TItem>(
       rowActions,
       collection,
       getCurrentDataFacet,
-      isWalletConnected: true,
+      isWalletConnected,
     },
   };
 };

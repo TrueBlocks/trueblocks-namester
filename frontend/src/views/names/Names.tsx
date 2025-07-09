@@ -9,16 +9,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { GetNamesPage, NamesCrud, Reload } from '@app';
-import { Action, BaseTab, usePagination } from '@components';
+import { Action, BaseTab, ConfirmModal, usePagination } from '@components';
 import { ViewStateKey, useFiltering, useSorting } from '@contexts';
-import { toPageDataProp, useActions, useColumns } from '@hooks';
+import { ActionType } from '@hooks';
+import {
+  DataFacetConfig,
+  toPageDataProp,
+  useActionMsgs,
+  useActions,
+  useColumns,
+  useSilencedDialog,
+} from '@hooks';
 // prettier-ignore
-import { DataFacetConfig, useActiveFacet, useEvent, usePayload } from '@hooks';
+import { useActiveFacet, useEvent, usePayload } from '@hooks';
 import { TabView } from '@layout';
 import { Group } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
 import { msgs, names, types } from '@models';
-import { useErrorHandler } from '@utils';
+import { ActionDebugger, useErrorHandler } from '@utils';
 
 import { getColumns } from './columns';
 import { DEFAULT_FACET, ROUTE, namesFacets } from './facets';
@@ -26,7 +34,7 @@ import { DEFAULT_FACET, ROUTE, namesFacets } from './facets';
 // === END SECTION 1 ===
 
 export const Names = () => {
-  // === SECTION 2: Hook Initialization ===
+  // === SECTION 2.2: Hook Initialization ===
   const createPayload = usePayload();
 
   const activeFacetHook = useActiveFacet({
@@ -49,15 +57,33 @@ export const Names = () => {
   const { pagination, setTotalItems, goToPage } = usePagination(viewStateKey);
   const { sort } = useSorting(viewStateKey);
   const { filter } = useFiltering(viewStateKey);
-  // === END SECTION 2 ===
+  // === SECTION 2.1: Modal State ===
+  const { emitSuccess } = useActionMsgs('names');
+  const [confirmModal, setConfirmModal] = useState<{
+    opened: boolean;
+    address: string;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    opened: false,
+    address: '',
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
+  const { isSilenced } = useSilencedDialog('createCustomName');
+  // === END SECTION 2.1 ===
+
+  // === END SECTION 2.2 ===
 
   // === SECTION 3: Data Fetching Logic ===
   const fetchData = useCallback(async () => {
     clearError();
     try {
-      const currentFacet = getCurrentDataFacet();
       const result = await GetNamesPage(
-        createPayload(currentFacet),
+        createPayload(getCurrentDataFacet()),
         pagination.currentPage * pagination.pageSize,
         pagination.pageSize,
         sort,
@@ -142,15 +168,36 @@ export const Names = () => {
     return item;
   }, []);
 
+  const enabledActions = useMemo(() => {
+    // EXISTING_CODE
+    const currentFacet = getCurrentDataFacet();
+    if (currentFacet === types.DataFacet.CUSTOM) {
+      return [
+        'publish',
+        'pin',
+        'add',
+        'delete',
+        'remove',
+        'autoname',
+        'update',
+      ] as ActionType[];
+    }
+    if (currentFacet === types.DataFacet.BADDRESS) {
+      return ['add'] as ActionType[];
+    }
+    return ['add', 'autoname', 'update'] as ActionType[];
+    // EXISTING_CODE
+  }, [getCurrentDataFacet]);
+
   // prettier-ignore
   const { handlers, config } = useActions({
     collection: 'names',
     viewStateKey,
-    pagination: pagination,
-    goToPage: goToPage,
+    pagination,
+    goToPage,
     sort,
     filter,
-    enabledActions: ['add', 'publish', 'pin', 'delete', 'remove', 'autoname'],
+    enabledActions,
     pageData,
     setPageData,
     setTotalItems,
@@ -163,7 +210,47 @@ export const Names = () => {
     getCurrentDataFacet,
   });
 
-  const { handleAutoname, handleRemove, handleToggle, handleUpdate } = handlers;
+  const {
+    handleAutoname: originalHandleAutoname,
+    handleRemove,
+    handleToggle,
+    handleUpdate,
+  } = handlers;
+
+  // EXISTING_CODE
+  const handleAutoname = useCallback(
+    (address: string) => {
+      const currentFacet = getCurrentDataFacet();
+      if (currentFacet === types.DataFacet.CUSTOM || isSilenced) {
+        originalHandleAutoname(address);
+        return;
+      }
+      setConfirmModal({
+        opened: true,
+        address,
+        title: 'Create Custom Name',
+        message:
+          'This will create a custom name for this address. The new custom name will be available in the Custom tab.',
+        onConfirm: () => {
+          originalHandleAutoname(address);
+          emitSuccess('autoname', address);
+          activeFacetHook.setActiveFacet(types.DataFacet.CUSTOM);
+        },
+      });
+    },
+    [
+      getCurrentDataFacet,
+      isSilenced,
+      originalHandleAutoname,
+      emitSuccess,
+      activeFacetHook,
+    ],
+  );
+
+  const handleCloseModal = useCallback(() => {
+    setConfirmModal((prev) => ({ ...prev, opened: false }));
+  }, []);
+  // EXISTING_CODE
 
   const headerActions = useMemo(() => {
     if (config.headerActions.length === 0) return null;
@@ -183,35 +270,44 @@ export const Names = () => {
               }
               onClick={handler}
               title={
-                action.requiresWallet && false
+                action.requiresWallet && !config.isWalletConnected
                   ? `${action.title} (requires wallet connection)`
                   : action.title
               }
               size="sm"
-              isSubdued={action.requiresWallet && false}
+              isSubdued={action.requiresWallet && !config.isWalletConnected}
             />
           );
         })}
       </Group>
     );
-  }, [config.headerActions, handlers]);
-
+  }, [config.headerActions, config.isWalletConnected, handlers]);
   // === END SECTION 6 ===
 
   // === SECTION 7: Form & UI Handlers ===
-  const showActions = getCurrentDataFacet() === types.DataFacet.CUSTOM;
-  const getCanRemove = (row: unknown): boolean => {
+  const showActions = useMemo(() => {
     return (
-      Boolean((row as unknown as types.Name)?.deleted) &&
-      getCurrentDataFacet() === types.DataFacet.CUSTOM
+      enabledActions.includes('delete' as ActionType) ||
+      enabledActions.includes('remove' as ActionType) ||
+      enabledActions.includes('autoname' as ActionType)
     );
-  };
+  }, [enabledActions]);
+
+  const getCanRemove = useCallback(
+    (row: unknown): boolean => {
+      return (
+        Boolean((row as unknown as types.Name)?.deleted) &&
+        enabledActions.includes('remove' as ActionType)
+      );
+    },
+    [enabledActions],
+  );
 
   const currentColumns = useColumns(
     getColumns(getCurrentDataFacet()),
     {
       showActions,
-      actions: ['delete', 'undelete', 'remove', 'autoname'],
+      actions: ['delete', 'remove', 'autoname'],
       getCanRemove,
     },
     {
@@ -226,7 +322,17 @@ export const Names = () => {
   // === END SECTION 7 ===
 
   // === SECTION 8: Tab Configuration ===
+  const canUpdate =
+    enabledActions.includes('update' as ActionType) ||
+    enabledActions.includes('add' as ActionType);
+
   const perTabContent = useMemo(() => {
+    const actionDebugger = (
+      <ActionDebugger
+        enabledActions={enabledActions}
+        setActiveFacet={activeFacetHook.setActiveFacet}
+      />
+    );
     return (
       <BaseTab<Record<string, unknown>>
         data={currentData as unknown as Record<string, unknown>[]}
@@ -234,20 +340,33 @@ export const Names = () => {
         loading={!!pageData?.isFetching}
         error={error}
         viewStateKey={viewStateKey}
-        onSubmit={handleUpdate}
+        onSubmit={canUpdate ? handleUpdate : undefined}
+        debugComponent={actionDebugger}
         headerActions={headerActions}
-        onDelete={(rowData: Record<string, unknown>) => {
-          const address = String(rowData.address || '');
-          handleToggle(address);
-        }}
-        onRemove={(rowData: Record<string, unknown>) => {
-          const address = String(rowData.address || '');
-          handleRemove(address);
-        }}
-        onAutoname={(rowData: Record<string, unknown>) => {
-          const address = String(rowData.address || '');
-          handleAutoname(address);
-        }}
+        onDelete={
+          enabledActions.includes('delete' as ActionType)
+            ? (rowData: Record<string, unknown>) => {
+                const address = String(rowData.address || '');
+                handleToggle(address);
+              }
+            : undefined
+        }
+        onRemove={
+          enabledActions.includes('remove' as ActionType)
+            ? (rowData: Record<string, unknown>) => {
+                const address = String(rowData.address || '');
+                handleRemove(address);
+              }
+            : undefined
+        }
+        onAutoname={
+          enabledActions.includes('autoname' as ActionType)
+            ? (rowData: Record<string, unknown>) => {
+                const address = String(rowData.address || '');
+                handleAutoname(address);
+              }
+            : undefined
+        }
       />
     );
   }, [
@@ -256,11 +375,14 @@ export const Names = () => {
     pageData?.isFetching,
     error,
     handleUpdate,
+    canUpdate,
     viewStateKey,
     headerActions,
     handleToggle,
     handleRemove,
     handleAutoname,
+    enabledActions,
+    activeFacetHook.setActiveFacet,
   ]);
 
   const tabs = useMemo(
@@ -288,6 +410,14 @@ export const Names = () => {
         </div>
       )}
       {renderCnt.current > 0 && <div>{`renderCnt: ${renderCnt.current}`}</div>}
+      <ConfirmModal
+        opened={confirmModal.opened}
+        onClose={handleCloseModal}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        dialogKey="confirmNamesModal"
+      />
     </div>
   );
   // === END SECTION 9 ===

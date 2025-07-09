@@ -4,6 +4,7 @@ import { Action } from '@components';
 import { FormField } from '@components';
 import { types } from '@models';
 import { getAddressString } from '@utils';
+import { ActionType } from 'src/hooks/useActions';
 
 import type { ActionData } from './useActionConfig';
 
@@ -12,8 +13,6 @@ interface ColumnConfig<T extends Record<string, unknown>> {
   actions: ActionType[];
   getCanRemove?: (row: T, pageData?: PageDataUnion) => boolean;
 }
-
-type ActionType = 'delete' | 'undelete' | 'remove' | 'autoname';
 
 type PageDataUnion = {
   facet: types.DataFacet;
@@ -126,12 +125,11 @@ export const useColumns = (
         const addressStr = getAddressString(row.address as string);
         const isProcessing = Boolean(row.processing);
         const isDeleted = Boolean(row.deleted);
-
         const actionData = {
           addressStr,
           isProcessing,
           isDeleted,
-          operations: config.actions,
+          operations: config.actions as unknown as ActionData['operations'],
           canRemove,
         };
 
@@ -146,4 +144,4 @@ export const useColumns = (
   }, [baseColumns, config, handlers, pageData, actionConfig, perRowCrud]);
 };
 
-export type { ColumnConfig, ActionType, ActionHandlers, ActionConfig };
+export type { ColumnConfig, ActionHandlers, ActionConfig };

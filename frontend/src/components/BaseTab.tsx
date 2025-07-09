@@ -16,6 +16,7 @@ interface BaseTabProps<T extends Record<string, unknown>> {
   onRemove?: (rowData: T) => void;
   onAutoname?: (rowData: T) => void;
   headerActions?: React.ReactNode;
+  debugComponent?: React.ReactNode;
 }
 
 export function BaseTab<T extends Record<string, unknown>>({
@@ -29,6 +30,7 @@ export function BaseTab<T extends Record<string, unknown>>({
   onAutoname,
   viewStateKey,
   headerActions,
+  debugComponent,
 }: BaseTabProps<T>) {
   // Always render table structure - let Table component handle all states
   return (
@@ -44,6 +46,7 @@ export function BaseTab<T extends Record<string, unknown>>({
           onRemove={onRemove}
           onAutoname={onAutoname}
           headerActions={headerActions}
+          debugComponent={debugComponent}
         />
       </div>
     </TableProvider>

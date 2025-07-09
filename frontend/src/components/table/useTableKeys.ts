@@ -102,16 +102,22 @@ export const useTableKeys = ({
         case 'Backspace':
           if (!e.metaKey && !e.ctrlKey) {
             e.preventDefault();
-            onDelete?.();
+            if (onDelete) {
+              onDelete();
+            }
           } else {
             e.preventDefault();
-            onCmdDelete?.();
+            if (onCmdDelete) {
+              onCmdDelete();
+            }
           }
           break;
         case 'a':
           if (!e.metaKey && !e.ctrlKey && !e.altKey) {
             e.preventDefault();
-            onAutoname?.();
+            if (onAutoname) {
+              onAutoname();
+            }
           }
           break;
         case 'Escape':

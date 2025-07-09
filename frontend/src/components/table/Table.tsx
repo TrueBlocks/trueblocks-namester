@@ -33,6 +33,7 @@ export interface TableProps<T extends Record<string, unknown>> {
   >;
   onModalOpen?: (openModal: (data: T) => void) => void;
   headerActions?: React.ReactNode;
+  debugComponent?: React.ReactNode;
 }
 
 export const Table = <T extends Record<string, unknown>>({
@@ -47,6 +48,7 @@ export const Table = <T extends Record<string, unknown>>({
   validate,
   onModalOpen,
   headerActions,
+  debugComponent,
 }: TableProps<T>) => {
   const processedColumns = processColumns(columns);
 
@@ -271,6 +273,8 @@ export const Table = <T extends Record<string, unknown>>({
         />
         {headerActions}
       </div>
+
+      {debugComponent}
 
       {/* Synchronized scrollable header */}
       <div

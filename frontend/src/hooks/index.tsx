@@ -12,4 +12,7 @@ export * from './useDateTime';
 export * from './useEvent';
 export * from './useIconSets';
 export * from './usePayload';
+export * from './useSilencedDialog';
 export * from './useStaggeredLoading';
+export * from './useWallet';
+export * from './useWalletGatedAction';

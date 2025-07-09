@@ -6,8 +6,12 @@
 {{- $isNames := eq $class "Names" -}}
 {{- $isMonitors := eq $class "Monitors" -}}
 {{- $hasUpdate := $isNames -}}
+{{- $hasDelete := contains .CrudStrs "delete" -}}
+{{- $hasActions := or (or $isNames $isAbis) $isMonitors -}}
 {{- $hasForms := .HasForms -}}
 {{- $isStatus := eq $class "Status" -}}
+{{- $actions := replace .CrudStrs ", 'update'" "" -}}
+{{- $actions := replace $actions ", 'undelete'" "" -}}
 {{- $models := printf "%s, msgs" $lower -}}
 {{- if or $isNames $isStatus -}}
   {{- $models = printf "msgs, %s" $lower -}}
@@ -29,16 +33,35 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { {{$apis}} } from '@app';
-import { Action, BaseTab, usePagination } from '@components';
+import { {{if $hasActions}}Action, {{end}}BaseTab, {{if $isNames}}ConfirmModal, {{end}}usePagination } from '@components';
 import { ViewStateKey, useFiltering, useSorting } from '@contexts';
-import { toPageDataProp, useActions, useColumns } from '@hooks';
+{{- if $hasActions }}
+import { ActionType } from '@hooks';
+{{- end }}
+import {
+  DataFacetConfig, 
+  {{if not .HasCruds}}ActionConfig, {{end}}
+  toPageDataProp,
+  {{- if $isNames }}
+  useActionMsgs,
+  {{- end }}
+  {{- if .HasCruds}}
+  useActions,
+  {{- end}}
+  {{- if $isNames }}
+  useSilencedDialog,
+  {{- end }}
+  useColumns,
+} from '@hooks';
 // prettier-ignore
-import { DataFacetConfig, useActiveFacet, useEvent, usePayload } from '@hooks';
+import { useActiveFacet, useEvent, usePayload } from '@hooks';
 import { {{if $hasForms}}FormView, {{end}}TabView } from '@layout';
+{{- if .HasCruds }}
 import { Group } from '@mantine/core';
+{{- end }}
 import { useHotkeys } from '@mantine/hooks';
 import { {{$models}}, types } from '@models';
-import { useErrorHandler } from '@utils';
+import { ActionDebugger, useErrorHandler } from '@utils';
 
 import { getColumns } from './columns';
 import { DEFAULT_FACET, ROUTE, {{$lower}}Facets } from './facets';
@@ -46,7 +69,7 @@ import { DEFAULT_FACET, ROUTE, {{$lower}}Facets } from './facets';
 // === END SECTION 1 ===
 
 export const {{$class}} = () => {
-  // === SECTION 2: Hook Initialization ===
+  // === SECTION 2.2: Hook Initialization ===
   const createPayload = usePayload();
 
   const activeFacetHook = useActiveFacet({
@@ -66,18 +89,38 @@ export const {{$class}} = () => {
   );
 
   const { error, handleError, clearError } = useErrorHandler();
-  const { pagination, setTotalItems, goToPage } = usePagination(viewStateKey);
+  const { pagination, setTotalItems{{if .HasCruds}}, goToPage{{end}} } = usePagination(viewStateKey);
   const { sort } = useSorting(viewStateKey);
   const { filter } = useFiltering(viewStateKey);
-  // === END SECTION 2 ===
+  {{- if $isNames }}
+  // === SECTION 2.1: Modal State ===
+  const { emitSuccess } = useActionMsgs('names');
+  const [confirmModal, setConfirmModal] = useState<{
+    opened: boolean;
+    address: string;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    opened: false,
+    address: '',
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
+  const { isSilenced } = useSilencedDialog('createCustomName');
+  // === END SECTION 2.1 ===
+  {{- end }}
+
+  // === END SECTION 2.2 ===
 
   // === SECTION 3: Data Fetching Logic ===
   const fetchData = useCallback(async () => {
     clearError();
     try {
-      const currentFacet = getCurrentDataFacet();
       const result = await Get{{$class}}Page(
-        createPayload(currentFacet),
+        createPayload(getCurrentDataFacet()),
         pagination.currentPage * pagination.pageSize,
         pagination.pageSize,
         sort,
@@ -145,21 +188,27 @@ export const {{$class}} = () => {
   // === END SECTION 4 ===
 
   // === SECTION 6: Actions ===
+{{- if .HasCruds}}
   const postFunc = useCallback((item: types.{{$single}}): types.{{$single}} => {
     // EXISTING_CODE
     // EXISTING_CODE
     return item;
   }, []);
 
+  const enabledActions = useMemo(() => {
+    // EXISTING_CODE
+    // EXISTING_CODE
+  }, [{{if not (or $isAbis $isMonitors)}}getCurrentDataFacet{{end}}]);
+
   // prettier-ignore
   const { handlers, config } = useActions({
     collection: '{{$lower}}',
     viewStateKey,
-    pagination: pagination,
-    goToPage: goToPage,
+    pagination,
+    goToPage,
     sort,
     filter,
-    enabledActions: ['add', 'publish', 'pin', 'delete', 'remove', 'autoname'],
+    enabledActions,
     pageData,
     setPageData,
     setTotalItems,
@@ -173,6 +222,9 @@ export const {{$class}} = () => {
   });
 
   const { {{ .Handlers }} } = handlers;
+
+  // EXISTING_CODE
+  // EXISTING_CODE
 
   const headerActions = useMemo(() => {
     if (config.headerActions.length === 0) return null;
@@ -192,43 +244,76 @@ export const {{$class}} = () => {
               }
               onClick={handler}
               title={
-                action.requiresWallet && false
+                action.requiresWallet && !config.isWalletConnected
                   ? `${action.title} (requires wallet connection)`
                   : action.title
               }
               size="sm"
-              isSubdued={action.requiresWallet && false}
+              isSubdued={action.requiresWallet && !config.isWalletConnected}
             />
           );
         })}
       </Group>
     );
-  }, [config.headerActions, handlers]);
-
+  }, [config.headerActions, config.isWalletConnected, handlers]);
+  {{- end }}
   // === END SECTION 6 ===
 
   // === SECTION 7: Form & UI Handlers ===
-  const showActions = {{if $isAbis}}getCurrentDataFacet() === types.DataFacet.DOWNLOADED{{else}}{{if $isNames}}getCurrentDataFacet() === types.DataFacet.CUSTOM{{else}}{{.HasCruds}}{{end}}{{end}};
-  const getCanRemove = ({{if or $isAbis (not .HasCruds)}}_{{end}}row: unknown): boolean => {
-    {{- if $isNames }}
+  {{- if $hasActions }}
+  const showActions = useMemo(() => {
     return (
-      Boolean((row as unknown as types.Name)?.deleted) &&
-      getCurrentDataFacet() === types.DataFacet.CUSTOM
+      {{- if $hasDelete }}
+      enabledActions.includes('delete' as ActionType) ||
+      {{- end }}
+      enabledActions.includes('remove' as ActionType) {{- if $isNames }}||
+      enabledActions.includes('autoname' as ActionType)
+      {{- end }}
     );
+  }, [enabledActions]);
+
+  const getCanRemove = useCallback(
+    {{- if or $isNames $isMonitors }}
+    (row: unknown): boolean => {
+      return (
+        Boolean((row as unknown as types.{{toSingular $class}})?.deleted) &&
+        enabledActions.includes('remove' as ActionType)
+      );
+    },
     {{- else }}
-    {{- if $isAbis }}
-    return getCurrentDataFacet() === types.DataFacet.DOWNLOADED;
-    {{- else }}
-    return {{if not .HasCruds}}true{{else}}Boolean((row as unknown as types.{{$single}})?.deleted){{end}};
+      {{- if $isAbis }}
+    (_row: unknown): boolean => {
+      return getCurrentDataFacet() === types.DataFacet.DOWNLOADED;
+    },
+      {{- else }}
+        {{- if not .HasCruds }}
+          (_row: unknown): boolean => {
+            return false;
+          },
+        {{- else }}
+          (row: unknown): boolean => {
+            return Boolean((row as unknown as types.{{$single}})?.deleted);
+          },
+        {{- end }}
+      {{- end }}
     {{- end }}
-    {{- end }}
-  };
+    [{{if or $isNames $isMonitors}}enabledActions{{end}}{{if $isAbis}}getCurrentDataFacet{{end}}],
+  );
+  {{- else }}
+  const showActions = false;
+  const getCanRemove = useCallback(
+    (_row: unknown): boolean => {
+      return false;
+    },
+    [],
+  );
+  {{- end }}
 
   const currentColumns = useColumns(
     getColumns(getCurrentDataFacet()),
     {
       showActions,
-      actions: [{{replace .CrudStrs ", 'update'" ""}}],
+      actions: [{{$actions}}],
       getCanRemove,
     },
     {{- if .HasCruds}}
@@ -239,12 +324,18 @@ export const {{$class}} = () => {
     {},
     {{- end}}
     toPageDataProp(pageData),
-    config,
+    {{if .HasCruds}}config{{else}}{} as ActionConfig{{end}},
     {{not $isAbis}} /* perRowCrud */,
   );
   // === END SECTION 7 ===
 
   // === SECTION 8: Tab Configuration ===
+  {{- if $hasUpdate }}
+  const canUpdate =
+    enabledActions.includes('update' as ActionType) ||
+    enabledActions.includes('add' as ActionType);
+  {{- end}}
+
   {{- if $hasForms }}
   const isForm = useCallback((facet: types.DataFacet) => {
     switch (facet) {
@@ -254,9 +345,16 @@ export const {{$class}} = () => {
         return false;
     }
   }, []);
+  {{- end}}
 
-  {{- end }}
   const perTabContent = useMemo(() => {
+    const actionDebugger = (
+      <ActionDebugger
+        enabledActions={ {{if $hasActions}}enabledActions{{else}}[]{{end}} }
+        setActiveFacet={activeFacetHook.setActiveFacet}
+      />
+    );
+
     {{- if $hasForms }}
     const facet = getCurrentDataFacet();
     if (isForm(facet)) {
@@ -290,6 +388,8 @@ export const {{$class}} = () => {
           columns={currentColumns}
           loading={!!pageData?.isFetching}
           error={error}
+          debugComponent={actionDebugger}
+          headerActions={ {{if .HasCruds}}headerActions{{else}}[]{{end}} }
           viewStateKey={viewStateKey}
         />
       );
@@ -303,23 +403,38 @@ export const {{$class}} = () => {
         error={error}
         viewStateKey={viewStateKey}
         {{- if $hasUpdate }}
-        onSubmit={handleUpdate}
-        headerActions={headerActions}
+        onSubmit={canUpdate ? handleUpdate : undefined}
         {{- end }}
+        debugComponent={actionDebugger}
+        headerActions={ {{if .HasCruds}}headerActions{{else}}[]{{end}} }
         {{- if .HasCruds }}
-        onDelete={(rowData: Record<string, unknown>) => {
-          const address = String(rowData.address || '');
-          handleToggle(address);
-        }}
-        onRemove={(rowData: Record<string, unknown>) => {
-          const address = String(rowData.address || '');
-          handleRemove(address);
-        }}
+        {{- if $hasDelete }}
+        onDelete={
+          enabledActions.includes('delete' as ActionType)
+            ? (rowData: Record<string, unknown>) => {
+                const address = String(rowData.address || '');
+                handleToggle(address);
+              }
+            : undefined
+        }
+        {{- end }}
+        onRemove={
+          enabledActions.includes('remove' as ActionType)
+            ? (rowData: Record<string, unknown>) => {
+                const address = String(rowData.address || '');
+                handleRemove(address);
+              }
+            : undefined
+        }
         {{- if $isNames }}
-        onAutoname={(rowData: Record<string, unknown>) => {
-          const address = String(rowData.address || '');
-          handleAutoname(address);
-        }}
+        onAutoname={
+          enabledActions.includes('autoname' as ActionType)
+            ? (rowData: Record<string, unknown>) => {
+                const address = String(rowData.address || '');
+                handleAutoname(address);
+              }
+            : undefined
+        }
         {{- end }}
         {{- end }}
       />
@@ -332,18 +447,27 @@ export const {{$class}} = () => {
     error,
     {{- if $hasUpdate }}
     handleUpdate,
+    canUpdate,
     {{- end }}
     viewStateKey,
     {{- if $hasForms}}
     isForm,
     getCurrentDataFacet,
     {{- end}}
-    headerActions,
     {{- if .HasCruds }}
+    headerActions,
+    {{- if $hasDelete }}
     handleToggle,
+    {{- end }}
     handleRemove,
+    {{- if $isNames }}
     handleAutoname,
     {{- end }}
+    {{- end }}
+    {{- if $hasActions }}
+    enabledActions,
+    {{- end }}
+    activeFacetHook.setActiveFacet,
   ]);
 
   const tabs = useMemo(
@@ -371,6 +495,16 @@ export const {{$class}} = () => {
         </div>
       )}
       {renderCnt.current > 0 && <div>{`renderCnt: ${renderCnt.current}`}</div>}
+      {{- if $isNames }}
+      <ConfirmModal
+        opened={confirmModal.opened}
+        onClose={handleCloseModal}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        dialogKey="confirm{{$class}}Modal"
+      />
+      {{- end }}
     </div>
   );
   // === END SECTION 9 ===

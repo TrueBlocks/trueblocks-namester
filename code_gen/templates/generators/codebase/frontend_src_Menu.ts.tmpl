@@ -68,7 +68,11 @@ export const MenuItems: MenuItem[] = [
     component: Khedra,
     hotkey: 'mod+{{ $n }}',
     altHotkey: 'alt+{{ $n }}',
-  {{- $n = add $n 1 }}
+  {{- if eq $n 9 }}
+    {{- $n = 0 }}
+  {{- else }}
+    {{- $n = add $n 1 }}
+  {{- end }}
     type: 'navigation',
   },
   {
