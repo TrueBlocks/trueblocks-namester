@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { StyledBadge, StyledText } from '@components';
 import { useWalletGatedAction } from '@hooks';
 import {
   Alert,
-  Badge,
   Button,
   Card,
   Divider,
@@ -281,31 +281,36 @@ export const ContractExecute: React.FC<ContractExecuteProps> = ({
     return (
       <Stack gap="md" align="center" style={{ padding: '2rem' }}>
         <Loader size="lg" />
-        <Text c="dimmed">Loading write functions...</Text>
+        <StyledText variant="dimmed">Loading write functions...</StyledText>
       </Stack>
     );
   }
 
   if (!contractState.abi) {
-    return <Alert color="yellow">No ABI available for this contract</Alert>;
+    return <Alert variant="light">No ABI available for this contract</Alert>;
   }
 
   if (writeFunctions.length === 0) {
     return (
-      <Alert color="blue">No write functions found in this contract</Alert>
+      <Alert variant="light">No write functions found in this contract</Alert>
     );
   }
 
   if (!showAllFunctions && !currentFunction) {
     return (
-      <Alert color="red">
+      <Alert
+        variant="light"
+        style={{
+          borderColor: 'var(--skin-status-error)',
+        }}
+      >
         Function &quot;{functionName}&quot; not found in contract ABI
       </Alert>
     );
   }
 
   if (!currentFunction) {
-    return <Alert color="yellow">Please select a function</Alert>;
+    return <Alert variant="light">Please select a function</Alert>;
   }
 
   // Update form field value and validation
@@ -453,22 +458,20 @@ export const ContractExecute: React.FC<ContractExecuteProps> = ({
           <div>
             <Title order={4}>{currentFunction.name}</Title>
             <Group gap="xs">
-              <Badge color="orange" variant="light">
+              <StyledBadge variant="light">
                 {currentFunction.stateMutability}
-              </Badge>
+              </StyledBadge>
               {currentFunction.stateMutability === 'payable' && (
-                <Badge color="red" variant="light">
-                  Requires ETH
-                </Badge>
+                <StyledBadge variant="filled">Requires ETH</StyledBadge>
               )}
             </Group>
           </div>
         </Group>
 
         {currentFunction.inputs.length === 0 && (
-          <Text size="sm" c="dimmed" mt="sm">
+          <StyledText size="sm" variant="dimmed" mt="sm">
             This function takes no parameters
-          </Text>
+          </StyledText>
         )}
       </div>
 
@@ -496,7 +499,7 @@ export const ContractExecute: React.FC<ContractExecuteProps> = ({
           onClick={handleSubmit}
           loading={isSubmitting}
           disabled={isButtonDisabled}
-          color="orange"
+          variant="filled"
         >
           {!isWalletConnected
             ? 'Send Transaction'
@@ -507,7 +510,20 @@ export const ContractExecute: React.FC<ContractExecuteProps> = ({
       </Group>
 
       {transactionResult && (
-        <Alert color={transactionResult.includes('Error') ? 'red' : 'green'}>
+        <Alert
+          variant="light"
+          style={
+            transactionResult.includes('Error')
+              ? {
+                  borderColor: 'var(--skin-error)',
+                  backgroundColor: 'var(--skin-error-background)',
+                }
+              : {
+                  borderColor: 'var(--skin-success)',
+                  backgroundColor: 'var(--skin-success-background)',
+                }
+          }
+        >
           {transactionResult}
         </Alert>
       )}

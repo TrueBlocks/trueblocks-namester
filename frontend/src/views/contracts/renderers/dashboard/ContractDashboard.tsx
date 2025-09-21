@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { StyledBadge, StyledText } from '@components';
 import {
   Alert,
-  Badge,
   Button,
   Card,
   Grid,
@@ -266,14 +266,14 @@ export const ContractDashboard: React.FC<ContractDashboardProps> = ({
     return (
       <Stack gap="md" align="center" style={{ padding: '2rem' }}>
         <Loader size="lg" />
-        <Text c="dimmed">Loading contract functions...</Text>
+        <StyledText variant="dimmed">Loading contract functions...</StyledText>
       </Stack>
     );
   }
 
   if (!hasReadFunctions) {
     return (
-      <Alert color="blue">
+      <Alert variant="light">
         This contract has no read functions (view/pure) to display
       </Alert>
     );
@@ -291,9 +291,9 @@ export const ContractDashboard: React.FC<ContractDashboardProps> = ({
           style={{ minWidth: '280px', maxWidth: '320px', flex: '0 0 auto' }}
         >
           <Stack gap="xs">
-            <Text fw={600} size="sm" c="dimmed">
+            <StyledText fw={600} size="sm" variant="dimmed">
               Read Functions (No Input)
-            </Text>
+            </StyledText>
             {Object.entries(functionResults)
               .filter(
                 ([, result]) =>
@@ -306,7 +306,7 @@ export const ContractDashboard: React.FC<ContractDashboardProps> = ({
                   <div
                     key={functionName}
                     style={{
-                      borderBottom: '1px solid var(--mantine-color-gray-3)',
+                      borderBottom: '1px solid var(--skin-border-subtle)',
                       paddingBottom: '8px',
                       marginBottom: '8px',
                     }}
@@ -320,10 +320,9 @@ export const ContractDashboard: React.FC<ContractDashboardProps> = ({
                         >
                           {functionName}
                         </Text>
-                        <Badge
+                        <StyledBadge
                           size="xs"
                           variant="light"
-                          color="blue"
                           style={{ fontSize: '10px', height: '16px' }}
                         >
                           {func.outputs && func.outputs.length > 0
@@ -331,7 +330,7 @@ export const ContractDashboard: React.FC<ContractDashboardProps> = ({
                               ? func.outputs[0]?.type || 'unknown'
                               : `(${func.outputs.map((output) => output.type).join(', ')})`
                             : 'void'}
-                        </Badge>
+                        </StyledBadge>
                       </div>
                       <Tooltip label="Refresh this function">
                         <Button
@@ -356,22 +355,22 @@ export const ContractDashboard: React.FC<ContractDashboardProps> = ({
                       {result?.loading ? (
                         <Group gap="xs">
                           <Loader size="xs" />
-                          <Text size="xs" c="dimmed">
+                          <StyledText size="xs" variant="dimmed">
                             Loading...
-                          </Text>
+                          </StyledText>
                         </Group>
                       ) : result && getFunctionError(result) ? (
-                        <Text size="xs" c="red">
+                        <StyledText size="xs" variant="error">
                           Error: {getFunctionError(result)}
-                        </Text>
+                        </StyledText>
                       ) : (
                         <Text
                           size="xs"
                           style={{
                             fontFamily: 'monospace',
                             wordBreak: 'break-all',
-                            background: 'var(--mantine-color-gray-1)',
-                            color: 'var(--mantine-color-dark-7)',
+                            background: 'var(--skin-surface-sunken)',
+                            color: 'var(--skin-text-primary)',
                             padding: '4px',
                             borderRadius: '2px',
                             lineHeight: 1.2,
@@ -412,20 +411,20 @@ export const ContractDashboard: React.FC<ContractDashboardProps> = ({
                               {functionName}
                               <Text
                                 component="span"
-                                c="dimmed"
+                                style={{ color: 'var(--skin-text-dimmed)' }}
                                 size="xs"
                                 ml="xs"
                               >
                                 (input)
                               </Text>
                             </Text>
-                            <Badge size="xs" variant="light" color="blue">
+                            <StyledBadge size="xs" variant="light">
                               {func.outputs && func.outputs.length > 0
                                 ? func.outputs.length === 1
                                   ? func.outputs[0]?.type || 'unknown'
                                   : `(${func.outputs.map((output) => output.type).join(', ')})`
                                 : 'void'}
-                            </Badge>
+                            </StyledBadge>
                           </div>
                           <Tooltip label="Refresh this function">
                             <Button
@@ -445,12 +444,17 @@ export const ContractDashboard: React.FC<ContractDashboardProps> = ({
                           {result?.loading ? (
                             <Group gap="xs">
                               <Loader size="xs" />
-                              <Text size="xs" c="dimmed">
+                              <StyledText size="xs" variant="dimmed">
                                 Loading...
-                              </Text>
+                              </StyledText>
                             </Group>
                           ) : result && getFunctionError(result) ? (
-                            <Alert color="red">
+                            <Alert
+                              variant="light"
+                              style={{
+                                borderColor: 'var(--skin-status-error)',
+                              }}
+                            >
                               <Text size="xs">{getFunctionError(result)}</Text>
                             </Alert>
                           ) : (
@@ -460,12 +464,12 @@ export const ContractDashboard: React.FC<ContractDashboardProps> = ({
                                 style={{
                                   fontFamily: 'monospace',
                                   wordBreak: 'break-all',
-                                  background: 'var(--mantine-color-dark-6)',
-                                  color: 'var(--mantine-color-gray-0)',
+                                  background: 'var(--skin-surface-elevated)',
+                                  color: 'var(--skin-text-primary)',
                                   padding: '8px',
                                   borderRadius: '4px',
                                   border:
-                                    '1px solid var(--mantine-color-gray-4)',
+                                    '1px solid var(--skin-border-secondary)',
                                 }}
                               >
                                 {result
@@ -473,12 +477,12 @@ export const ContractDashboard: React.FC<ContractDashboardProps> = ({
                                   : 'No result'}
                               </Text>
                               {result?.lastUpdated && (
-                                <Text size="xs" c="dimmed" mt="xs">
+                                <StyledText size="xs" variant="dimmed" mt="xs">
                                   Updated:{' '}
                                   {new Date(
                                     result.lastUpdated,
                                   ).toLocaleTimeString()}
-                                </Text>
+                                </StyledText>
                               )}
                             </div>
                           )}

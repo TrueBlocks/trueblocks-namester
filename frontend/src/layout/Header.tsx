@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 
 import { GetAppId } from '@app';
 import {
-  Action,
+  DebugToggle,
+  LightDarkToggle,
   ProjectContextBar,
   SkinSwitcher,
   WalletConnectButton,
@@ -11,13 +12,12 @@ import { usePreferences } from '@hooks';
 import { AppShell, Group, Text } from '@mantine/core';
 
 export const Header = () => {
-  const [appName, setAppName] = useState('AppName');
-  const { setDebugCollapsed, debugCollapsed, chromeCollapsed } =
-    usePreferences();
+  const [baseName, setBaseName] = useState('');
+  const { chromeCollapsed } = usePreferences();
 
   useEffect(() => {
     GetAppId().then((id) => {
-      setAppName(id.appName);
+      setBaseName(id.baseName);
     });
   }, []);
 
@@ -26,24 +26,13 @@ export const Header = () => {
   return (
     <AppShell.Header>
       <Group justify="space-between" p="md" h="100%">
-        <Text size="xl" fw={700}>
-          {appName}
+        <Text size="36px" fw={700} style={{ lineHeight: 1 }}>
+          {baseName}
         </Text>
         <ProjectContextBar />
         <Group justify="flex-end" align="center" gap="xs">
-          <Action
-            icon="DebugOn"
-            iconOff="DebugOff"
-            isOn={!debugCollapsed}
-            onClick={() => setDebugCollapsed(!debugCollapsed)}
-            title={
-              debugCollapsed
-                ? 'Debug mode OFF - Click to enable'
-                : 'Debug mode ON - Click to disable'
-            }
-            variant="default"
-            color={debugCollapsed ? 'gray' : 'red'}
-          />
+          <DebugToggle />
+          <LightDarkToggle />
           <SkinSwitcher collapsed />
           <WalletConnectButton />
         </Group>

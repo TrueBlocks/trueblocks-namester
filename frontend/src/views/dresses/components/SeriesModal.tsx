@@ -1,14 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import {
-  Badge,
-  Button,
-  Group,
-  Modal,
-  Stack,
-  Text,
-  TextInput,
-} from '@mantine/core';
+import { StyledBadge, StyledModal } from '@components';
+import { Badge, Button, Group, Stack, Text, TextInput } from '@mantine/core';
 import { dalle } from '@models';
 
 interface SeriesModalProps {
@@ -91,7 +84,7 @@ export const SeriesModal = ({
   };
 
   return (
-    <Modal
+    <StyledModal
       opened={opened}
       onClose={onClose}
       title={
@@ -129,14 +122,28 @@ export const SeriesModal = ({
           placeholder="0"
         />
         <Group gap="xs">
-          <Badge
-            variant="light"
-            color="blue"
-          >{`Existing: ${existing.length}`}</Badge>
-          {isDup && <Badge color="red">Duplicate</Badge>}
+          <StyledBadge variant="light">{`Existing: ${existing.length}`}</StyledBadge>
+          {isDup && (
+            <Badge
+              style={{
+                borderColor: 'var(--skin-error)',
+                backgroundColor: 'var(--skin-error-background)',
+                color: 'var(--skin-error)',
+              }}
+            >
+              Duplicate
+            </Badge>
+          )}
         </Group>
         <Group justify="flex-end" mt="md">
-          <Button variant="subtle" onClick={onClose}>
+          <Button
+            style={{
+              backgroundColor: 'transparent',
+              color: 'var(--skin-text-dimmed)',
+              border: 'none',
+            }}
+            onClick={onClose}
+          >
             Cancel
           </Button>
           <Button disabled={!canSubmit} onClick={handleSubmit}>
@@ -144,6 +151,6 @@ export const SeriesModal = ({
           </Button>
         </Group>
       </Stack>
-    </Modal>
+    </StyledModal>
   );
 };

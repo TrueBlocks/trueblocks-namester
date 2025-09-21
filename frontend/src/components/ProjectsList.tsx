@@ -1,4 +1,4 @@
-import { Action } from '@components';
+import { Action, StyledText } from '@components';
 import { useViewContext } from '@contexts';
 import { useActiveProject, useEvent, useIconSets } from '@hooks';
 import { Group, List, Paper, Text, ThemeIcon, Title } from '@mantine/core';
@@ -69,16 +69,15 @@ export const ProjectsList = () => {
             <Group justify="space-between" wrap="nowrap">
               <div>
                 <Text fw={project.isActive ? 700 : 400}>{project.name}</Text>
-                <Text size="xs" c="dimmed">
+                <StyledText size="xs" variant="dimmed">
                   {project.path}
-                </Text>
+                </StyledText>
               </div>
               <Group gap="xs">
                 {!project.isActive && (
                   <Action
                     icon="Switch"
                     title="Switch to this project"
-                    color="blue"
                     variant="light"
                     onClick={() => handleSwitchProject(project.id)}
                   />
@@ -86,9 +85,11 @@ export const ProjectsList = () => {
                 <Action
                   icon="Delete"
                   title="Close project"
-                  color="red"
                   variant="light"
                   onClick={() => handleCloseProject(project.id)}
+                  style={{
+                    color: 'var(--skin-error)',
+                  }}
                 />
               </Group>
             </Group>

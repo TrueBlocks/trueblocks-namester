@@ -1,10 +1,14 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 
-import { ChevronButton, useTableContext, useTableKeys } from '@components';
+import {
+  ChevronButton,
+  StyledModal,
+  useTableContext,
+  useTableKeys,
+} from '@components';
 import { Form, FormField } from '@components';
 import { useFiltering } from '@contexts';
 import { usePreferences } from '@hooks';
-import { Modal } from '@mantine/core';
 import { project } from '@models';
 import { getDebugClass } from '@utils';
 
@@ -298,8 +302,8 @@ export const Table = <T extends Record<string, unknown>>({
                     textAlign: 'left',
                     padding: '20px',
                     color: loading
-                      ? 'var(--mantine-color-blue-6)'
-                      : 'var(--mantine-color-gray-6)',
+                      ? 'var(--skin-primary)'
+                      : 'var(--skin-text-secondary)',
                   }}
                 >
                   {loading ? 'Loading...' : 'No data found.'}
@@ -330,7 +334,7 @@ export const Table = <T extends Record<string, unknown>>({
         )}
       </div>
 
-      <Modal
+      <StyledModal
         opened={isModalOpen}
         onClose={closeModal}
         centered
@@ -340,7 +344,7 @@ export const Table = <T extends Record<string, unknown>>({
         styles={{
           header: { display: 'none' },
           overlay: {
-            backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent gray overlay
+            backgroundColor: 'var(--skin-surface-sunken)',
             backdropFilter: 'blur(1px)', // Optional slight blur effect
           },
           inner: {
@@ -349,7 +353,7 @@ export const Table = <T extends Record<string, unknown>>({
           content: {
             // Target the modal content itself
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', // Add a subtle box shadow
-            border: '1px solid var(--mantine-color-gray-3)', // Add a light border, theme-aware
+            border: '1px solid var(--skin-border-default)', // Add a light border, theme-aware
           },
         }}
       >
@@ -387,7 +391,7 @@ export const Table = <T extends Record<string, unknown>>({
             validate={validate}
           />
         </div>
-      </Modal>
+      </StyledModal>
     </div>
   );
 };

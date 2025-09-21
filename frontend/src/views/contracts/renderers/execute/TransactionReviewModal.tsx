@@ -1,15 +1,14 @@
 import React, { useCallback, useState } from 'react';
 
+import { StyledBadge, StyledModal, StyledText } from '@components';
 import {
   Alert,
-  Badge,
   Button,
   Card,
   Code,
   Divider,
   Group,
   LoadingOverlay,
-  Modal,
   Stack,
   Text,
 } from '@mantine/core';
@@ -117,15 +116,15 @@ export const TransactionReviewModal: React.FC<TransactionReviewModalProps> = ({
   }
 
   return (
-    <Modal
+    <StyledModal
       opened={opened}
       onClose={onClose}
       title={
         <Group gap="sm">
           <Text fw={600}>Review Transaction</Text>
-          <Badge variant="light" color="blue">
+          <StyledBadge variant="light">
             {transactionData.function.name}
-          </Badge>
+          </StyledBadge>
         </Group>
       }
       size="lg"
@@ -139,23 +138,22 @@ export const TransactionReviewModal: React.FC<TransactionReviewModalProps> = ({
               <Text size="sm" fw={500}>
                 Function
               </Text>
-              <Badge
-                variant="light"
-                color={
+              <StyledBadge
+                variant={
                   transactionData.function.stateMutability === 'payable'
-                    ? 'orange'
-                    : 'blue'
+                    ? 'filled'
+                    : 'light'
                 }
               >
                 {transactionData.function.stateMutability}
-              </Badge>
+              </StyledBadge>
             </Group>
             <Text size="lg" fw={600}>
               {transactionData.function.name}
             </Text>
-            <Text size="sm" c="dimmed">
+            <StyledText size="sm" variant="dimmed">
               Contract: {transactionData.to}
-            </Text>
+            </StyledText>
           </Stack>
         </Card>
 
@@ -172,9 +170,9 @@ export const TransactionReviewModal: React.FC<TransactionReviewModalProps> = ({
                     <Text size="sm" fw={500}>
                       {input.name}
                     </Text>
-                    <Badge variant="light" size="xs">
+                    <StyledBadge variant="light" size="xs">
                       {input.type}
-                    </Badge>
+                    </StyledBadge>
                   </Group>
                   <Code>{formatParameter(input)}</Code>
                 </Group>
@@ -256,7 +254,14 @@ export const TransactionReviewModal: React.FC<TransactionReviewModalProps> = ({
 
         {/* Error Display */}
         {error && (
-          <Alert title="Error" color="red" variant="light">
+          <Alert
+            title="Error"
+            variant="light"
+            style={{
+              borderColor: 'var(--skin-error)',
+              backgroundColor: 'var(--skin-error-background)',
+            }}
+          >
             {error}
           </Alert>
         )}
@@ -270,7 +275,15 @@ export const TransactionReviewModal: React.FC<TransactionReviewModalProps> = ({
 
         {/* Action Buttons */}
         <Group justify="flex-end" gap="sm">
-          <Button variant="subtle" onClick={onClose} disabled={confirming}>
+          <Button
+            style={{
+              backgroundColor: 'transparent',
+              color: 'var(--skin-text-dimmed)',
+              border: 'none',
+            }}
+            onClick={onClose}
+            disabled={confirming}
+          >
             Cancel
           </Button>
           <Button
@@ -282,6 +295,6 @@ export const TransactionReviewModal: React.FC<TransactionReviewModalProps> = ({
           </Button>
         </Group>
       </Stack>
-    </Modal>
+    </StyledModal>
   );
 };

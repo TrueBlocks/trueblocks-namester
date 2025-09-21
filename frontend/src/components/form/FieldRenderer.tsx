@@ -1,8 +1,8 @@
 import { ChangeEvent, forwardRef, isValidElement } from 'react';
 
-import { FormField } from '@components';
+import { FormField, StyledText } from '@components';
 import { useActiveProject } from '@hooks';
-import { Fieldset, Stack, Text, TextInput } from '@mantine/core';
+import { Fieldset, Stack, TextInput } from '@mantine/core';
 import { formatWeiToEther, formatWeiToGigawei } from '@utils';
 
 export interface FieldRendererProps {
@@ -87,9 +87,9 @@ export const FieldRenderer = forwardRef<HTMLInputElement, FieldRendererProps>(
         return (
           <div key={keyProp}>
             {parts.map((part, idx) => (
-              <Text key={idx} size="sm" fw={idx === 0 ? 500 : undefined}>
+              <StyledText key={idx} size="sm" fw={idx === 0 ? 500 : undefined}>
                 {idx === 0 ? `${field.label}: ${part}` : part}
-              </Text>
+              </StyledText>
             ))}
           </div>
         );
@@ -97,23 +97,23 @@ export const FieldRenderer = forwardRef<HTMLInputElement, FieldRendererProps>(
 
       return (
         <div key={keyProp}>
-          <Text
+          <StyledText
             size="sm"
             fw={500}
             style={{
               ...(isHighlighted
                 ? {
-                    backgroundColor: 'var(--mantine-color-blue-1)',
-                    color: 'var(--mantine-color-blue-9)',
+                    backgroundColor: 'var(--skin-primary-alpha-10)',
+                    color: 'var(--skin-primary)',
                     padding: '2px 6px',
                     borderRadius: '4px',
-                    border: '1px solid var(--mantine-color-blue-3)',
+                    border: '1px solid var(--skin-border-focus)',
                   }
                 : {}),
             }}
           >
             {field.label}: {displayValue}
-          </Text>
+          </StyledText>
         </div>
       );
     }
@@ -165,24 +165,30 @@ export const FieldRenderer = forwardRef<HTMLInputElement, FieldRendererProps>(
             (field.required && !field.value && `${field.label} is required`)
           }
           styles={{
+            label: {
+              color: 'var(--skin-text-primary)',
+            },
             input: {
+              color: 'var(--skin-text-primary)',
+              backgroundColor: 'var(--skin-surface-default)',
+              borderColor: 'var(--skin-border-default)',
               ...(field.error
                 ? {
-                    borderColor: '#fa5252',
-                    backgroundColor: 'rgba(250, 82, 82, 0.1)',
+                    borderColor: 'var(--skin-error)',
+                    backgroundColor: 'var(--skin-error-background)',
                   }
                 : {}),
               ...(field.readOnly
                 ? {
-                    color: 'var(--mantine-color-text)', // Use Mantine's text color variable for theme adaptability
+                    color: 'var(--skin-text-primary)',
                     opacity: 0.6, // Slightly reduce opacity to differentiate but keep readable
                   }
                 : {}),
               ...(isHighlighted
                 ? {
-                    backgroundColor: 'var(--mantine-color-blue-1)',
-                    borderColor: 'var(--mantine-color-blue-4)',
-                    color: 'var(--mantine-color-blue-9)',
+                    backgroundColor: 'var(--skin-primary-alpha-10)',
+                    borderColor: 'var(--skin-border-focus)',
+                    color: 'var(--skin-primary)',
                   }
                 : {}),
             },
@@ -198,9 +204,9 @@ export const FieldRenderer = forwardRef<HTMLInputElement, FieldRendererProps>(
           autoFocus={autoFocus}
         />
         {hint && (
-          <Text size="sm" c="dimmed">
+          <StyledText size="sm" variant="dimmed">
             {hint}
-          </Text>
+          </StyledText>
         )}
       </div>
     );

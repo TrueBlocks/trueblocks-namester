@@ -1,10 +1,9 @@
 import { useState } from 'react';
 
-import { Action } from '@components';
+import { Action, StyledBadge, StyledText } from '@components';
 import { useViewContext } from '@contexts';
 import { ProjectInfo, useActiveProject, useIconSets } from '@hooks';
 import {
-  Badge,
   Button,
   Card,
   Container,
@@ -107,15 +106,15 @@ export const Projects = () => {
                 {project.name}
               </Title>
               {project.isActive && (
-                <Badge size="xs" color="green">
+                <StyledBadge size="xs" variant="filled">
                   Active
-                </Badge>
+                </StyledBadge>
               )}
             </Group>
 
-            <Text size="xs" c="dimmed" mt="2px">
+            <StyledText size="xs" variant="dimmed" mt="2px">
               {project.path}
-            </Text>
+            </StyledText>
 
             {project.description && (
               <Text size="xs" mt="xs" lineClamp={2}>
@@ -124,14 +123,14 @@ export const Projects = () => {
             )}
 
             <Group gap="xs" mt="xs">
-              <Text size="xs" c="dimmed">
+              <StyledText size="xs" variant="dimmed">
                 Last opened: {new Date(project.lastOpened).toLocaleDateString()}
-              </Text>
+              </StyledText>
               {project.addresses && project.addresses.length > 0 && (
-                <Badge size="xs" variant="light">
+                <StyledBadge size="xs" variant="light">
                   {project.addresses.length} address
                   {project.addresses.length > 1 ? 'es' : ''}
-                </Badge>
+                </StyledBadge>
               )}
             </Group>
           </div>
@@ -141,8 +140,7 @@ export const Projects = () => {
               <Action
                 icon="Switch"
                 title="Switch to this project"
-                color="blue"
-                variant="light"
+                variant="filled"
                 size="sm"
                 onClick={() => handleSwitchProject(project.id)}
               />
@@ -150,7 +148,6 @@ export const Projects = () => {
             <Action
               icon="Update"
               title="Update project"
-              color="gray"
               variant="light"
               size="sm"
               onClick={() => {
@@ -161,8 +158,7 @@ export const Projects = () => {
             <Action
               icon="Delete"
               title="Close project"
-              color="red"
-              variant="light"
+              variant="outline"
               size="sm"
               onClick={() => {
                 // TODO: Implement project closing with confirmation
@@ -182,7 +178,7 @@ export const Projects = () => {
         <Group justify="space-between" align="center">
           <div>
             <Title order={2}>Project Manager</Title>
-            <Text c="dimmed">Manage your projects</Text>
+            <StyledText variant="dimmed">Manage your projects</StyledText>
           </div>
 
           <Button
@@ -196,9 +192,9 @@ export const Projects = () => {
 
         {/* Error Display */}
         {error && (
-          <Text c="red" size="sm">
+          <StyledText variant="error" size="sm">
             {error}
-          </Text>
+          </StyledText>
         )}
 
         {/* Create Project Form */}
@@ -286,11 +282,11 @@ export const Projects = () => {
                       ? 'No projects match your search'
                       : 'No open projects'}
                   </Text>
-                  <Text c="dimmed" size="sm">
+                  <StyledText variant="dimmed" size="sm">
                     {searchQuery
                       ? 'Try a different search term or clear the search'
                       : 'Create a new project to get started with blockchain analysis'}
-                  </Text>
+                  </StyledText>
                 </div>
                 {!searchQuery && (
                   <Button
