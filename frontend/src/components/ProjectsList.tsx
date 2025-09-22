@@ -1,7 +1,7 @@
 import { Action, StyledText } from '@components';
 import { useViewContext } from '@contexts';
 import { useActiveProject, useEvent, useIconSets } from '@hooks';
-import { Group, List, Paper, Text, ThemeIcon, Title } from '@mantine/core';
+import { Group, List, Paper, ThemeIcon, Title } from '@mantine/core';
 import { msgs } from '@models';
 import { Log, LogError } from '@utils';
 import { useLocation } from 'wouter';
@@ -68,8 +68,14 @@ export const ProjectsList = () => {
           >
             <Group justify="space-between" wrap="nowrap">
               <div>
-                <Text fw={project.isActive ? 700 : 400}>{project.name}</Text>
-                <StyledText size="xs" variant="dimmed">
+                <StyledText
+                  variant="primary"
+                  size="md"
+                  fw={project.isActive ? 600 : 400}
+                >
+                  {project.name}
+                </StyledText>
+                <StyledText variant="dimmed" size="xs">
                   {project.path}
                 </StyledText>
               </div>

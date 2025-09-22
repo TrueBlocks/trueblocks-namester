@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 
 import { GetAppId, GetWizardReturn } from '@app';
 import { StyledText } from '@components';
-import { Card, Container, Stepper, Text } from '@mantine/core';
+import { Card, Container, Stepper } from '@mantine/core';
 import { checkAndNavigateToWizard } from '@utils';
 import { useLocation } from 'wouter';
 
@@ -85,41 +85,15 @@ export const Wizard = () => {
 
   return (
     <Container size="md" mt="xl">
-      <Card
-        shadow="sm"
-        p="lg"
-        radius="md"
-        withBorder
-        styles={{
-          root: {
-            borderColor:
-              state.data.isFirstTimeSetup || state.ui.activeStep === 2
-                ? undefined
-                : 'var(--skin-warning)',
-            borderWidth:
-              state.data.isFirstTimeSetup || state.ui.activeStep === 2
-                ? undefined
-                : '2px',
-          },
-        }}
-      >
-        <Text
-          size="xl"
-          fw={700}
-          mb="md"
-          c={
-            state.data.isFirstTimeSetup || state.ui.activeStep === 2
-              ? undefined
-              : 'orange.6'
-          }
-        >
+      <Card shadow="sm" p="lg" radius="md" withBorder>
+        <StyledText variant="primary" size="xl" fw={600}>
           {state.data.isFirstTimeSetup
             ? welcomeText
             : state.ui.activeStep === 2
               ? 'All Issues Resolved'
               : 'Something is Wrong'}
-        </Text>
-        <StyledText variant="dimmed" mb="xl">
+        </StyledText>
+        <StyledText variant="dimmed" size="md">
           {state.data.isFirstTimeSetup
             ? 'Complete the following steps to get started'
             : state.ui.activeStep === 2

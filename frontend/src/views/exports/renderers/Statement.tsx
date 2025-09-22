@@ -1,7 +1,10 @@
 import { StyledText } from '@components';
-import { Divider, Grid, Group, Stack, Text, Tooltip } from '@mantine/core';
+import { DetailField, DetailPanelContainer, DetailSection } from '@components';
+import { Grid, Group, Stack } from '@mantine/core';
 import { types } from '@models';
 import { addressToHex } from '@utils';
+
+import '../../../components/detail/DetailTable.css';
 
 export const renderStatementDetailPanel = (
   rowData: Record<string, unknown> | null,
@@ -56,6 +59,7 @@ export const renderStatementDetailPanel = (
     statement.gasOut,
     statement.selfDestructOut,
   ]);
+  const hasPrice = toBig(statement.spotPrice) === 0n;
   const formatRaw = (b: bigint) => {
     if (b === 0n) return '-';
     const neg = b < 0n;
@@ -97,237 +101,349 @@ export const renderStatementDetailPanel = (
     }
   };
 
-  return (
-    <Stack gap={8} className="fixed-prompt-width">
+  // Create complex title component
+  const titleComponent = (
+    <>
       <Group justify="space-between" align="flex-start">
-        <Text fw={600} size="lg">
-          Tx {hashToHex(statement.transactionHash)}
-        </Text>
-        <Tooltip
-          label={isReconciled ? 'Reconciled' : 'Not reconciled'}
-          withArrow
-          position="left"
+        <StyledText
+          variant="primary"
+          size="lg"
+          fw={600}
+          style={{ color: 'var(--skin-text-primary)' }}
         >
-          <Text
-            size="xl"
-            fw={700}
-            c={isReconciled ? 'green' : 'red'}
-            style={{ lineHeight: 1, paddingRight: 4 }}
-          >
-            {isReconciled ? '✓' : '✗'}
-          </Text>
-        </Tooltip>
+          Tx {hashToHex(statement.transactionHash)}
+        </StyledText>
+        <StyledText
+          variant={isReconciled ? 'success' : 'error'}
+          size="xl"
+          fw={600}
+        >
+          {isReconciled ? '✓' : '✗'}
+        </StyledText>
       </Group>
       <Group justify="space-between" gap={4} wrap="nowrap">
-        <Text size="md" fw={600}>
+        <StyledText
+          variant="primary"
+          size="md"
+          fw={600}
+          style={{ color: 'var(--skin-text-primary)' }}
+        >
           {new Date(statement.timestamp * 1000).toLocaleString()}
-        </Text>
-        <Text size="md" fw={600}>
+        </StyledText>
+        <StyledText
+          variant="primary"
+          size="md"
+          fw={600}
+          style={{ color: 'var(--skin-text-primary)' }}
+        >
           {statement.blockNumber}.{statement.transactionIndex}
           {statement.logIndex !== undefined && statement.logIndex !== null
             ? `.${statement.logIndex}`
             : ''}
-        </Text>
+        </StyledText>
       </Group>
-      <Divider variant="dashed" />
-      <Text size="md" fw={600}>
-        Participants
-      </Text>
-      <Grid gutter={4}>
-        <Grid.Col span={6}>
-          <StyledText size="md" variant="dimmed">
-            Accounted For
-          </StyledText>
-          <Text size="md">
-            {displayAddress8(statement.accountedFor || statement.holder)}
-          </Text>
-          <StyledText size="md" variant="dimmed" mt={8}>
-            Asset
-          </StyledText>
-          <Text size="md">
-            {displayAddress8(statement.asset)}
-            {statement.symbol ? ` (${statement.symbol})` : ''}
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={6}>
-          <StyledText size="md" variant="dimmed">
-            Sender
-          </StyledText>
-          <Text size="md">{displayAddress8(statement.sender)}</Text>
-          <StyledText size="md" variant="dimmed" mt={8}>
-            Recipient
-          </StyledText>
-          <Text size="md">{displayAddress8(statement.recipient)}</Text>
-        </Grid.Col>
-      </Grid>
-      <Divider variant="dashed" />
-      <Text size="md" fw={600}>
-        Balance Summary
-      </Text>
-      <Grid gutter={4} columns={100}>
-        <Grid.Col span={24}>
-          <StyledText size="md" variant="dimmed">
-            Beg Bal
-          </StyledText>
-          <Tooltip label={beginBalRaw.toString()} withArrow>
-            <Text
-              size="md"
-              ta="right"
-              c={beginBalRaw === 0n ? 'dimmed' : undefined}
-              style={{ fontFamily: 'monospace', paddingRight: 16 }}
-            >
-              {formatRaw(beginBalRaw)}
-            </Text>
-          </Tooltip>
-        </Grid.Col>
-        <Grid.Col span={24}>
-          <StyledText size="md" variant="dimmed">
-            Income
-          </StyledText>
-          <Tooltip label={totalInRaw.toString()} withArrow>
-            <Text
-              size="md"
-              ta="right"
-              c={totalInRaw === 0n ? 'dimmed' : undefined}
-              style={{ fontFamily: 'monospace', paddingRight: 16 }}
-            >
-              {formatRaw(totalInRaw)}
-            </Text>
-          </Tooltip>
-        </Grid.Col>
-        <Grid.Col span={4}></Grid.Col>
-        <Grid.Col span={24}>
-          <StyledText size="md" variant="dimmed">
-            Outflow
-          </StyledText>
-          <Tooltip label={totalOutRaw.toString()} withArrow>
-            <Text
-              size="md"
-              ta="right"
-              c={totalOutRaw === 0n ? 'dimmed' : undefined}
-              style={{ fontFamily: 'monospace', paddingRight: 16 }}
-            >
-              {formatRaw(totalOutRaw)}
-            </Text>
-          </Tooltip>
-        </Grid.Col>
-        <Grid.Col span={24}>
-          <StyledText size="md" variant="dimmed">
-            End Bal
-          </StyledText>
-          <Tooltip label={endBalRaw.toString()} withArrow>
-            <Text
-              size="md"
-              ta="right"
-              c={endBalRaw === 0n ? 'dimmed' : undefined}
-              style={{ fontFamily: 'monospace', paddingRight: 16 }}
-            >
-              {formatRaw(endBalRaw)}
-            </Text>
-          </Tooltip>
-        </Grid.Col>
-      </Grid>
-      <Divider variant="dashed" />
-      <Text size="md" fw={600}>
-        Breakdown
-      </Text>
-      <Grid gutter={4}>
-        <Grid.Col span={6}>
-          <Text size="md" fw={600}>
-            Inflows
-          </Text>
-          {[
-            ['Amount In', statement.amountIn],
-            ['Internal In', statement.internalIn],
-            ['Prefund In', statement.prefundIn],
-            ['Self Destruct In', statement.selfDestructIn],
-            ['Miner In', minerInRaw],
-          ].map(([label, val]) => {
-            const raw = toBig(val);
-            return (
-              <Group key={label} justify="space-between" gap={4} wrap="nowrap">
-                <StyledText size="md" variant="dimmed">
-                  {label}
-                </StyledText>
-                <Tooltip label={raw.toString()} withArrow>
-                  <Text
-                    size="md"
-                    style={{ fontFamily: 'monospace', paddingRight: 16 }}
-                    c={raw === 0n ? 'dimmed' : undefined}
-                    ta="right"
+    </>
+  );
+
+  return (
+    <Stack gap={8} className="fixed-prompt-width">
+      <DetailPanelContainer title={titleComponent}>
+        <DetailSection title="Participants">
+          <Grid gutter={4}>
+            <Grid.Col span={6}>
+              <DetailField
+                label="Accounted For"
+                value={displayAddress8(
+                  statement.accountedFor || statement.holder,
+                )}
+                labelSpan={12}
+                valueSpan={12}
+              />
+              <DetailField
+                label="Asset"
+                value={`${displayAddress8(statement.asset)}${statement.symbol ? ` (${statement.symbol})` : ''}`}
+                labelSpan={12}
+                valueSpan={12}
+              />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <DetailField
+                label="Sender"
+                value={displayAddress8(statement.sender)}
+                labelSpan={12}
+                valueSpan={12}
+              />
+              <DetailField
+                label="Recipient"
+                value={displayAddress8(statement.recipient)}
+                labelSpan={12}
+                valueSpan={12}
+              />
+            </Grid.Col>
+          </Grid>
+        </DetailSection>
+        <DetailSection title="Balance Summary">
+          <Grid gutter={4}>
+            <Grid.Col span={3}>
+              <DetailField
+                label="Beg Bal"
+                value={
+                  <div
+                    style={{
+                      border: 'none',
+                      padding: '0 8px 0 0',
+                      fontFamily: 'monospace',
+                      textAlign: 'right',
+                      fontSize: '0.85em',
+                    }}
                   >
-                    {formatRaw(raw)}
-                  </Text>
-                </Tooltip>
-              </Group>
-            );
-          })}
-        </Grid.Col>
-        <Grid.Col span={6}>
-          <Text size="md" fw={600}>
-            Outflows
-          </Text>
-          {[
-            ['Amount Out', statement.amountOut],
-            ['Internal Out', statement.internalOut],
-            ['Gas Out', statement.gasOut],
-            ['Self Destruct Out', statement.selfDestructOut],
-          ].map(([label, val]) => {
-            const raw = toBig(val);
-            return (
-              <Group key={label} justify="space-between" gap={4} wrap="nowrap">
-                <StyledText size="md" variant="dimmed">
-                  {label}
-                </StyledText>
-                <Tooltip label={raw.toString()} withArrow>
-                  <Text
-                    size="md"
-                    style={{ fontFamily: 'monospace', paddingRight: 16 }}
-                    c={raw === 0n ? 'dimmed' : undefined}
-                    ta="right"
+                    {formatRaw(beginBalRaw)}
+                  </div>
+                }
+                labelSpan={12}
+                valueSpan={12}
+              />
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <DetailField
+                label="Income"
+                value={
+                  <div
+                    style={{
+                      textAlign: 'right',
+                      fontFamily: 'monospace',
+                      paddingRight: 16,
+                      color:
+                        totalInRaw === 0n
+                          ? 'var(--skin-text-dimmed)'
+                          : 'var(--skin-text-primary)',
+                    }}
                   >
-                    {formatRaw(raw)}
-                  </Text>
-                </Tooltip>
-              </Group>
-            );
-          })}
-        </Grid.Col>
-      </Grid>
-      <Divider variant="dashed" />
-      <Grid gutter={4}>
-        <Grid.Col span={4}>
-          <StyledText size="md" variant="dimmed">
+                    {formatRaw(totalInRaw)}
+                  </div>
+                }
+                labelSpan={12}
+                valueSpan={12}
+              />
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <DetailField
+                label="Outflow"
+                value={
+                  <div
+                    style={{
+                      textAlign: 'right',
+                      fontFamily: 'monospace',
+                      paddingRight: 16,
+                      color:
+                        totalOutRaw === 0n
+                          ? 'var(--skin-text-dimmed)'
+                          : 'var(--skin-text-primary)',
+                    }}
+                  >
+                    {formatRaw(totalOutRaw)}
+                  </div>
+                }
+                labelSpan={12}
+                valueSpan={12}
+              />
+            </Grid.Col>
+            <Grid.Col span={3}>
+              <DetailField
+                label="End Bal"
+                value={
+                  <div
+                    style={{
+                      border: 'none',
+                      padding: '0 8px 0 0',
+                      fontFamily: 'monospace',
+                      textAlign: 'right',
+                      fontSize: '0.85em',
+                    }}
+                  >
+                    {formatRaw(endBalRaw)}
+                  </div>
+                }
+                labelSpan={12}
+                valueSpan={12}
+              />
+            </Grid.Col>
+          </Grid>
+        </DetailSection>
+        <Grid gutter={1}>
+          <Grid.Col span={6}>
+            <DetailSection title="Inflows">
+              <Grid gutter={1}>
+                {[
+                  ['Amount In', statement.amountIn],
+                  ['Internal In', statement.internalIn],
+                  ['Prefund In', statement.prefundIn],
+                  ['Self Destruct In', statement.selfDestructIn],
+                  ['Miner In', minerInRaw],
+                ].map(([label, val]) => {
+                  const raw = toBig(val);
+                  return (
+                    <DetailField
+                      key={label}
+                      label={label}
+                      labelSpan={5}
+                      valueSpan={7}
+                      labelProps={{
+                        style: {
+                          padding: '1px 4px',
+                          fontSize: '0.85em',
+                          textOverflow: 'clip',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                        },
+                      }}
+                      valueProps={{
+                        style: {
+                          padding: '1px 4px',
+                        },
+                      }}
+                      value={
+                        <div
+                          style={{
+                            border: 'none',
+                            padding: '0 8px 0 0',
+                            fontFamily: 'monospace',
+                            textAlign: 'right',
+                            fontSize: '0.85em',
+                          }}
+                        >
+                          {formatRaw(raw)}
+                        </div>
+                      }
+                    />
+                  );
+                })}
+              </Grid>
+            </DetailSection>
+          </Grid.Col>
+          <Grid.Col span={6}>
+            <DetailSection title="Outflows">
+              <Grid gutter={1}>
+                {[
+                  ['Amount Out', statement.amountOut],
+                  ['Internal Out', statement.internalOut],
+                  ['Gas Out', statement.gasOut],
+                  ['Self Destruct Out', statement.selfDestructOut],
+                ].map(([label, val]) => {
+                  const raw = toBig(val);
+                  return (
+                    <DetailField
+                      key={label}
+                      label={label}
+                      labelSpan={5}
+                      valueSpan={7}
+                      labelProps={{
+                        style: {
+                          padding: '1px 4px',
+                          fontSize: '0.85em',
+                          textOverflow: 'clip',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                        },
+                      }}
+                      valueProps={{
+                        style: {
+                          padding: '1px 4px',
+                        },
+                      }}
+                      value={
+                        <div
+                          style={{
+                            border: 'none',
+                            padding: '0 8px 0 0',
+                            fontFamily: 'monospace',
+                            textAlign: 'right',
+                            fontSize: '0.85em',
+                          }}
+                        >
+                          {formatRaw(raw)}
+                        </div>
+                      }
+                    />
+                  );
+                })}
+              </Grid>
+            </DetailSection>
+          </Grid.Col>
+        </Grid>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '5fr 7fr 5fr 7fr',
+            alignItems: 'center',
+            gap: 0,
+            fontSize: '0.85em',
+          }}
+        >
+          <div
+            style={{
+              padding: '1px 4px',
+              fontWeight: 500,
+              textOverflow: 'clip',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              background: 'var(--skin-surface-subtle)',
+              color: 'var(--skin-text-dimmed)',
+            }}
+          >
             Spot Price
-          </StyledText>
-          <Tooltip label={toBig(statement.spotPrice).toString()} withArrow>
-            <Text
-              size="md"
-              ta="right"
-              c={toBig(statement.spotPrice) === 0n ? 'dimmed' : undefined}
-              style={{ fontFamily: 'monospace', paddingRight: 16 }}
-            >
-              {formatToken(statement.spotPrice)}
-            </Text>
-          </Tooltip>
-        </Grid.Col>
-        <Grid.Col span={5}>
-          <StyledText size="md" variant="dimmed">
+          </div>
+          <div
+            style={{
+              border: 'none',
+              padding: '0 8px 0 0',
+              fontFamily: 'monospace',
+              textAlign: 'right',
+              fontSize: 'inherit',
+              color: hasPrice
+                ? 'var(--skin-text-dimmed)'
+                : 'var(--skin-text-primary)',
+            }}
+          >
+            {formatToken(statement.spotPrice)}
+          </div>
+          <div
+            style={{
+              padding: '1px 4px',
+              fontWeight: 500,
+              textOverflow: 'clip',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              background: 'var(--skin-surface-subtle)',
+              color: 'var(--skin-text-dimmed)',
+            }}
+          >
             Price Source
+          </div>
+          <div
+            style={{
+              padding: '1px 4px',
+              fontSize: 'inherit',
+              textOverflow: 'clip',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              color: 'var(--skin-text-primary)',
+            }}
+          >
+            {statement.priceSource || '-'}
+          </div>
+        </div>
+        {!isReconciled && statement.correctingReasons && (
+          <StyledText variant="error" size="md">
+            {statement.correctingReasons}
           </StyledText>
-          <Text size="md">{statement.priceSource || '-'}</Text>
-        </Grid.Col>
-      </Grid>
-      {!isReconciled && statement.correctingReasons && (
-        <StyledText size="md" variant="error">
-          {statement.correctingReasons}
-        </StyledText>
-      )}
-      {statement.correctionId ? (
-        <StyledText size="md" variant="dimmed">
-          Correction Id: {statement.correctionId}
-        </StyledText>
-      ) : null}
+        )}
+        {statement.correctionId ? (
+          <StyledText variant="dimmed" size="md">
+            Correction Id: {statement.correctionId}
+          </StyledText>
+        ) : null}
+      </DetailPanelContainer>
     </Stack>
   );
 };

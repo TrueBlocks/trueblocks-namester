@@ -1,7 +1,6 @@
 import { ChangeEvent, forwardRef, isValidElement } from 'react';
 
 import { FormField, StyledText } from '@components';
-import { useActiveProject } from '@hooks';
 import { Fieldset, Stack, TextInput } from '@mantine/core';
 import { formatWeiToEther, formatWeiToGigawei } from '@utils';
 
@@ -21,8 +20,6 @@ export const FieldRenderer = forwardRef<HTMLInputElement, FieldRendererProps>(
     { field, mode, onChange, onBlur, loading, keyProp, autoFocus, tableCell },
     ref,
   ) => {
-    const { activeAddress } = useActiveProject();
-
     if (field.fields && field.fields.length > 0) {
       return (
         <Fieldset key={keyProp}>
@@ -49,11 +46,6 @@ export const FieldRenderer = forwardRef<HTMLInputElement, FieldRendererProps>(
 
     const isEtherField = field.type === 'ether';
     const isGasField = field.type === 'gas';
-    const isAddressField = field.type === 'address';
-    const isHighlighted =
-      isAddressField &&
-      field.value &&
-      field.value.toString().toLowerCase() === activeAddress.toLowerCase();
 
     if (mode === 'display') {
       let displayValue;
@@ -87,7 +79,7 @@ export const FieldRenderer = forwardRef<HTMLInputElement, FieldRendererProps>(
         return (
           <div key={keyProp}>
             {parts.map((part, idx) => (
-              <StyledText key={idx} size="sm" fw={idx === 0 ? 500 : undefined}>
+              <StyledText variant="primary" size="sm" key={idx}>
                 {idx === 0 ? `${field.label}: ${part}` : part}
               </StyledText>
             ))}
@@ -97,21 +89,7 @@ export const FieldRenderer = forwardRef<HTMLInputElement, FieldRendererProps>(
 
       return (
         <div key={keyProp}>
-          <StyledText
-            size="sm"
-            fw={500}
-            style={{
-              ...(isHighlighted
-                ? {
-                    backgroundColor: 'var(--skin-primary-alpha-10)',
-                    color: 'var(--skin-primary)',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--skin-border-focus)',
-                  }
-                : {}),
-            }}
-          >
+          <StyledText variant="primary" size="sm" fw={600}>
             {field.label}: {displayValue}
           </StyledText>
         </div>
@@ -184,13 +162,6 @@ export const FieldRenderer = forwardRef<HTMLInputElement, FieldRendererProps>(
                     opacity: 0.6, // Slightly reduce opacity to differentiate but keep readable
                   }
                 : {}),
-              ...(isHighlighted
-                ? {
-                    backgroundColor: 'var(--skin-primary-alpha-10)',
-                    borderColor: 'var(--skin-border-focus)',
-                    color: 'var(--skin-primary)',
-                  }
-                : {}),
             },
             error: {
               fontWeight: 500,
@@ -204,7 +175,7 @@ export const FieldRenderer = forwardRef<HTMLInputElement, FieldRendererProps>(
           autoFocus={autoFocus}
         />
         {hint && (
-          <StyledText size="sm" variant="dimmed">
+          <StyledText variant="dimmed" size="sm">
             {hint}
           </StyledText>
         )}

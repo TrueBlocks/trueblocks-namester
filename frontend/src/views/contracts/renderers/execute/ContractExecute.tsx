@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { StyledBadge, StyledText } from '@components';
+import { StyledBadge, StyledButton, StyledText } from '@components';
 import { useWalletGatedAction } from '@hooks';
 import {
   Alert,
-  Button,
   Card,
   Divider,
   Grid,
@@ -14,7 +13,6 @@ import {
   Select,
   Stack,
   Switch,
-  Text,
   TextInput,
   Textarea,
   Title,
@@ -281,7 +279,9 @@ export const ContractExecute: React.FC<ContractExecuteProps> = ({
     return (
       <Stack gap="md" align="center" style={{ padding: '2rem' }}>
         <Loader size="lg" />
-        <StyledText variant="dimmed">Loading write functions...</StyledText>
+        <StyledText variant="dimmed" size="md">
+          Loading write functions...
+        </StyledText>
       </Stack>
     );
   }
@@ -469,7 +469,7 @@ export const ContractExecute: React.FC<ContractExecuteProps> = ({
         </Group>
 
         {currentFunction.inputs.length === 0 && (
-          <StyledText size="sm" variant="dimmed" mt="sm">
+          <StyledText variant="dimmed" size="sm">
             This function takes no parameters
           </StyledText>
         )}
@@ -478,9 +478,9 @@ export const ContractExecute: React.FC<ContractExecuteProps> = ({
       {currentFunction.inputs.length > 0 && (
         <Card withBorder>
           <Stack gap="md">
-            <Text fw={500} size="sm">
+            <StyledText variant="primary" size="sm" fw={600}>
               Function Parameters
-            </Text>
+            </StyledText>
             <Divider />
 
             <Grid>
@@ -495,7 +495,7 @@ export const ContractExecute: React.FC<ContractExecuteProps> = ({
       )}
 
       <Group justify="flex-end">
-        <Button
+        <StyledButton
           onClick={handleSubmit}
           loading={isSubmitting}
           disabled={isButtonDisabled}
@@ -506,7 +506,7 @@ export const ContractExecute: React.FC<ContractExecuteProps> = ({
             : currentFunction.stateMutability === 'payable'
               ? 'Send Transaction (with ETH)'
               : 'Send Transaction'}
-        </Button>
+        </StyledButton>
       </Group>
 
       {transactionResult && (

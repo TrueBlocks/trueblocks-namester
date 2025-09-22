@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
-import { StyledSelect, StyledText } from '@components';
+import { StyledButton, StyledSelect, StyledText } from '@components';
 import { useIconSets } from '@hooks';
 import {
-  Button,
   Center,
   Container,
   Group,
@@ -279,7 +278,7 @@ export const Generator = ({ pageData, viewStateKey }: GeneratorProps) => {
             size="xs"
             disabled={!seriesOptions.length}
           />
-          <Button
+          <StyledButton
             size="xs"
             variant="filled"
             onClick={handleGenerate}
@@ -287,7 +286,7 @@ export const Generator = ({ pageData, viewStateKey }: GeneratorProps) => {
             style={{ alignSelf: 'flex-end' }}
           >
             Generate
-          </Button>
+          </StyledButton>
         </Group>
         <div
           style={{ display: 'flex', alignItems: 'flex-start', width: '100%' }}
@@ -320,7 +319,7 @@ export const Generator = ({ pageData, viewStateKey }: GeneratorProps) => {
                 />
               ) : (
                 <Center h={160}>
-                  <StyledText size="xs" variant="dimmed">
+                  <StyledText variant="dimmed" size="xs">
                     No image
                   </StyledText>
                 </Center>
@@ -356,12 +355,12 @@ export const Generator = ({ pageData, viewStateKey }: GeneratorProps) => {
                   style={{ fontFamily: 'monospace', fontSize: 11 }}
                 >
                   {attributes.length === 0 && (
-                    <StyledText size="xs" variant="dimmed">
+                    <StyledText variant="dimmed" size="xs">
                       No attributes
                     </StyledText>
                   )}
                   {attributes.map((a, i) => (
-                    <StyledText key={i} size="xs" variant="secondary">
+                    <StyledText variant="secondary" size="sm" key={i}>
                       {a.name}:{' '}
                       {a.value || a.selector || a.number || a.count || ''}
                     </StyledText>
@@ -383,15 +382,7 @@ export const Generator = ({ pageData, viewStateKey }: GeneratorProps) => {
                   padding: 6,
                 }}
               >
-                <StyledText
-                  size="xs"
-                  variant="secondary"
-                  style={{
-                    fontFamily: 'monospace',
-                    fontSize: 12,
-                    whiteSpace: 'pre-wrap',
-                  }}
-                >
+                <StyledText variant="secondary" size="xs">
                   {selectedItem?.prompt || ''}
                 </StyledText>
               </ScrollArea>
@@ -402,7 +393,7 @@ export const Generator = ({ pageData, viewStateKey }: GeneratorProps) => {
                   <Title order={6} style={{ flexGrow: 1 }}>
                     Enhanced Prompt
                   </Title>
-                  <Button
+                  <StyledButton
                     variant="subtle"
                     size="xs"
                     loading={speaking}
@@ -410,7 +401,7 @@ export const Generator = ({ pageData, viewStateKey }: GeneratorProps) => {
                     leftSection={<SpeakIcon size={12} />}
                   >
                     Speak
-                  </Button>
+                  </StyledButton>
                 </div>
                 {audioUrl && (
                   <audio
@@ -436,15 +427,7 @@ export const Generator = ({ pageData, viewStateKey }: GeneratorProps) => {
                     padding: 6,
                   }}
                 >
-                  <StyledText
-                    size="xs"
-                    variant="secondary"
-                    style={{
-                      fontFamily: 'monospace',
-                      fontSize: 12,
-                      whiteSpace: 'pre-wrap',
-                    }}
-                  >
+                  <StyledText variant="secondary" size="xs">
                     {selectedItem?.enhancedPrompt || ''}
                   </StyledText>
                 </ScrollArea>
@@ -496,7 +479,7 @@ export const Generator = ({ pageData, viewStateKey }: GeneratorProps) => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {['Claim', 'Mint', 'Burn', 'Trade', 'Eject', 'Merch'].map(
                 (label) => (
-                  <Button
+                  <StyledButton
                     key={label}
                     variant="light"
                     size="xs"
@@ -506,7 +489,7 @@ export const Generator = ({ pageData, viewStateKey }: GeneratorProps) => {
                     }
                   >
                     {label}
-                  </Button>
+                  </StyledButton>
                 ),
               )}
             </div>

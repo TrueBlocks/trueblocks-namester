@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { GetFormat, SetFormat, SilenceDialog } from '@app';
-import { StyledModal, StyledText } from '@components';
-import { Button, Checkbox, Group, Radio, Stack } from '@mantine/core';
+import { StyledButton, StyledModal, StyledText } from '@components';
+import { Checkbox, Group, Radio, Stack } from '@mantine/core';
 import { LogError } from '@utils';
 
 export interface ExportFormatModalProps {
@@ -96,7 +96,7 @@ export const ExportFormatModal = ({
       withCloseButton={false}
     >
       <Stack gap="md">
-        <StyledText size="sm" variant="dimmed">
+        <StyledText variant="dimmed" size="sm">
           Choose the format for your exported data:
         </StyledText>
 
@@ -125,23 +125,19 @@ export const ExportFormatModal = ({
         />
 
         <Group justify="flex-end" gap="sm">
-          <Button
-            style={{
-              backgroundColor: 'transparent',
-              color: 'var(--skin-text-dimmed)',
-              border: 'none',
-            }}
+          <StyledButton
+            variant="transparent"
             onClick={handleCancel}
             disabled={loading}
           >
             Cancel
-          </Button>
-          <Button
+          </StyledButton>
+          <StyledButton
             onClick={() => handleFormatSelect(selectedFormat)}
             loading={loading}
           >
             Export
-          </Button>
+          </StyledButton>
         </Group>
       </Stack>
     </StyledModal>

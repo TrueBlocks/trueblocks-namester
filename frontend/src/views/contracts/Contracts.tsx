@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GetContractsPage, Reload } from '@app';
 import { BaseTab, usePagination } from '@components';
 import { Action, ConfirmModal, ExportFormatModal } from '@components';
+import { createDetailPanel } from '@components';
 import { useFiltering, useSorting } from '@contexts';
 import {
   DataFacetConfig,
@@ -31,7 +32,6 @@ import { crud, msgs, project, types } from '@models';
 import { Debugger, LogError, useErrorHandler } from '@utils';
 
 import { ViewRoute, assertRouteConsistency } from '../routes';
-import { createDetailPanel } from '../utils/detailPanel';
 import { renderers } from './renderers';
 
 const ROUTE: ViewRoute = 'contracts';
@@ -216,8 +216,7 @@ export const Contracts = () => {
   );
 
   const detailPanel = useMemo(
-    () =>
-      createDetailPanel(viewConfig, getCurrentDataFacet, 'Contracts Details'),
+    () => createDetailPanel(viewConfig, getCurrentDataFacet),
     [viewConfig, getCurrentDataFacet],
   );
 

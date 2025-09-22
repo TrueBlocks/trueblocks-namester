@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GetChunksPage, Reload } from '@app';
 import { BaseTab, usePagination } from '@components';
 import { Action, ConfirmModal, ExportFormatModal } from '@components';
+import { createDetailPanel } from '@components';
 import { useFiltering, useSorting } from '@contexts';
 import {
   DataFacetConfig,
@@ -31,7 +32,6 @@ import { msgs, project, types } from '@models';
 import { Debugger, LogError, useErrorHandler } from '@utils';
 
 import { ViewRoute, assertRouteConsistency } from '../routes';
-import { createDetailPanel } from '../utils/detailPanel';
 
 const ROUTE: ViewRoute = 'chunks';
 export const Chunks = () => {
@@ -211,7 +211,7 @@ export const Chunks = () => {
   );
 
   const detailPanel = useMemo(
-    () => createDetailPanel(viewConfig, getCurrentDataFacet, 'Chunks Details'),
+    () => createDetailPanel(viewConfig, getCurrentDataFacet),
     [viewConfig, getCurrentDataFacet],
   );
 
