@@ -5,7 +5,7 @@
     doc_route = "700-dresses"
     attributes = ""
     produced_by = "dresses"
-    disable_go = false
+    disable_go = true
 
 [[facets]]
     name = "Generator"
