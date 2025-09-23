@@ -1,7 +1,7 @@
 {
   "views": {
     "dresses": {
-      "disabled": true,
+      "disabled": false,
       "facets": {
         "generator": false,
         "series": false,
@@ -11,7 +11,7 @@
       }
     },
     "exports": {
-      "disabled": true,
+      "disabled": false,
       "facets": {
         "statements": false,
         "balances": false,
@@ -25,7 +25,7 @@
       }
     },
     "chunks": {
-      "disabled": true,
+      "disabled": false,
       "facets": {
         "stats": false,
         "index": false,
@@ -34,7 +34,7 @@
       }
     },
     "status": {
-      "disabled": true,
+      "disabled": false,
       "facets": {
         "status": false,
         "caches": false,
@@ -42,7 +42,7 @@
       }
     },
     "contracts": {
-      "disabled": true,
+      "disabled": false,
       "facets": {
         "dashboard": false,
         "execute": false,
@@ -50,7 +50,7 @@
       }
     },
     "comparitoor": {
-      "disabled": true,
+      "disabled": false,
       "facets": {
         "comparitoor": false,
         "chifra": false,
@@ -79,7 +79,7 @@
       }
     },
     "monitors": {
-      "disabled": true,
+      "disabled": false,
       "facets": {
         "monitors": false
       }
