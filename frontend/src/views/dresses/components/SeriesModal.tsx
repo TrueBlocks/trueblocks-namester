@@ -30,9 +30,10 @@ const EMPTY: dalle.Series = {
   artstyles: [],
   litstyles: [],
   colors: [],
-  orientations: [],
+  viewpoints: [],
   gazes: [],
   backstyles: [],
+  compositions: [],
 };
 
 export const SeriesModal = ({
@@ -118,7 +119,6 @@ export const SeriesModal = ({
           error={isDup ? 'Suffix already exists' : undefined}
           placeholder="unique-suffix"
           withAsterisk
-          data-autofocus
         />
         <TextInput
           label="Last Index"
