@@ -4,7 +4,7 @@ package rpc
 import (
 	"fmt"
 
-	"github.com/TrueBlocks/trueblocks-core/src/apps/chifra/pkg/rpc"
+	"github.com/TrueBlocks/trueblocks-chifra/v6/pkg/rpc"
 	"github.com/TrueBlocks/trueblocks-namester/pkg/logging"
 	"github.com/TrueBlocks/trueblocks-namester/pkg/preferences"
 )
